@@ -16,7 +16,8 @@ This will override the server IP in the game.
 6. Go to the Network tab  
 7. Set Network Status to Connected  
 8. Set PSN Status to RPCN  
-9. IP/Hosts switches to acvd-ps3-ww.fromsoftware.jp=127.0.0.1  
+9. Set IP/Hosts switches to acvd-ps3-ww.fromsoftware.jp=127.0.0.1  
+10. Save the Custom Configuration  
 
 Next replace the RSA keypair used by Armored Core Verdict Day;  
 This will allow the server to communicate with the game.  
