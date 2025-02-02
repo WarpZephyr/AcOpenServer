@@ -65,4 +65,4 @@ Finally build the AcOpenServer.sln in VS 2022.
 # Credits
 Massive thanks to [ds3os](https://github.com/TLeonardUK/ds3os), it's research website [timleonard.uk](https://timleonard.uk), and related authors;  
 Much of the code is based on concepts presented by [ds3os](https://github.com/TLeonardUK/ds3os), and the native libraries around cryptography are mostly directly borrowed from it.  
-Thanks to openssl-net for the C# openssl wrapper this project modifies and uses.
+Thanks to [openssl-net](https://github.com/openssl-net/openssl-net) for the C# openssl wrapper this project modifies and uses.
