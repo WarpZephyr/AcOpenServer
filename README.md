@@ -1,6 +1,9 @@
 # AcOpenServer
 A project aimed at recreating the 5th generation Armored Core servers.  
 
+# Progress
+Currently still working on the base server code and getting past the authentication step.
+
 # Building
 First build the native libraries:  
 1. Go to the native/tools folder  
