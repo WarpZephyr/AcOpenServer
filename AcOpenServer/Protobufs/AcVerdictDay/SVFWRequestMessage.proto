@@ -1,4 +1,7 @@
-﻿syntax = "proto2";
+﻿// Credit: This file is based on protobufs found in ds3os by Tim Leonard.
+// Original Credit from ds3os Shared_Frpg2RequestMessage.proto: A lot of information here has been derived from the protobufs of AmirBohd's ModEngine2.
+
+syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 package SVFWRequestMessage;
 
