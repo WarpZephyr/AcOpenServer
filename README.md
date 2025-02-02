@@ -5,6 +5,14 @@ A project aimed at recreating the 5th generation Armored Core servers.
 Currently still working on the base server code and getting past the authentication step.
 
 # Building
+Currently only building on windows is directly supported.  
+However adding other platforms may be doable.  
+
+Make sure the project is not under strange folders.  
+Try to have no folders with spaces, -, or # in the path.  
+Ideally try to have no folders with symbols in the path.  
+This is because the native projects use CMake and it may not like odd paths.  
+
 First build the native libraries:  
 1. Go to the native/tools folder  
 2. Run native_generate_vs2022.bat  
