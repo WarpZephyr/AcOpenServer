@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<Platforms>AnyCPU;x64</Platforms>
+	<BaseOutputPath>..\bin\</BaseOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+	<DefineConstants>_WIN64</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Platform)'=='AnyCPU'">
+	<NativePlatform>x64</NativePlatform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'!='AnyCPU'">
+	<NativePlatform>$(Platform)</NativePlatform>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+	<NativeDirectory>..\native\bin\$(NativePlatform)\$(Configuration)</NativeDirectory>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Include="$(NativeDirectory)\aes_modes-$(NativePlatform).dll">
+      <Link>aes_modes-$(NativePlatform).dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(NativeDirectory)\aes-$(NativePlatform).lib">
+      <Link>aes-$(NativePlatform).dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

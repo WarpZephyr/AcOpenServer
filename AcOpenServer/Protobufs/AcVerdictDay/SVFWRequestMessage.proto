@@ -1,0 +1,54 @@
+﻿syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+package SVFWRequestMessage;
+
+// ------------------------------------------------------------------------------------------------------------
+// Login Server Messages
+// ------------------------------------------------------------------------------------------------------------
+
+// First message sent to the login server, used to request
+// the port and server_ip to authenticate over.
+message RequestQueryLoginServerInfo {
+    required string player_id = 1;
+    optional string f2 = 2;
+    required uint64 app_version = 3;
+}
+
+// Send in response to RequestQueryLoginServerInfo
+message RequestQueryLoginServerInfoResponse {
+    required int64 port = 1;
+}
+
+// ------------------------------------------------------------------------------------------------------------
+// Auth Server Messages
+// ------------------------------------------------------------------------------------------------------------
+
+// First message sent to auth server RSA encrypted. Provides a CWC key used
+// for encrypting the rest of the traffic.
+message RequestHandshake {
+    required bytes aes_cwc_key = 1;
+}
+
+// Response to initial message, encrypted with CWC.
+message RequestHandshakeResponse {
+}
+
+// Sent after handshake, all seemingly constant data (apart from the player_id). 
+// Presumably used for ensure we are connecting to a compatible server?
+message GetServiceStatus {
+    required int64 id = 1;              
+    required string player_id = 2;
+    optional string unknown_1 = 3;
+    required int64 app_version = 4;
+}
+
+// Response to GetServiceStatus, contains identical data to what is sent
+// with the exception of a blank player_id. Presumably if we connected to a dev server
+// or something we would get different responses.
+// If we are on an older version of the game an empty response is sent back for this.
+message GetServiceStatusResponse {
+    optional int64 id = 1;
+    optional string player_id = 2;
+    optional int64 unknown_1 = 3;
+    optional int64 app_version = 4;
+}

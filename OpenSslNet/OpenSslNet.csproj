@@ -1,0 +1,71 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>OpenSSL</RootNamespace>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyTitle>OpenSSL.NET</AssemblyTitle>
+    <Description>A managed wrapper for OpenSSL</Description>
+    <Company>OpenSSL.NET</Company>
+    <Product>OpenSSL.NET</Product>
+    <Copyright>Copyright %28c%29 OpenSSL.NET 2006-2012</Copyright>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0.0</FileVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>AnyCPU;x64</Platforms>
+    <BaseOutputPath>..\bin\</BaseOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Platform)'=='AnyCPU'">
+	<NativePlatform>x64</NativePlatform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'!='AnyCPU'">
+	<NativePlatform>$(Platform)</NativePlatform>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+	<CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Trace'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>TRACE;DEBUG;MEMORY_TRACKER</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='AnyCPU'">
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'!='AnyCPU'">
+    <OutputPath>bin\$(NativePlatform)\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+	<NativeDirectory>..\native\bin\$(NativePlatform)\$(Configuration)</NativeDirectory>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Include="$(NativeDirectory)\libcrypto-1_1-$(NativePlatform).dll">
+      <Link>libcrypto-1_1-$(NativePlatform).dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(NativeDirectory)\libssl-1_1-$(NativePlatform).dll">
+      <Link>libssl-1_1-$(NativePlatform).dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>
