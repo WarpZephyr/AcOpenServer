@@ -37,7 +37,7 @@ To unpack and repack the main archive use [DVDUnbinder](https://github.com/WarpZ
 
 If unpacking and repacking, use [DVDUnbinder](https://github.com/WarpZephyr/DVDUnbinder/releases) to now repack the main archive.  
 If you see no change, make sure the installed game archive under "RPCS3_FOLDER/dev_hdd0/game/BLUS31194/USRDIR/bind" is replaced.  
-BLUS31194 is the region code for the PS3 US Armored Core Verdict Day on disc, replace as necessary.  
+BLUS31194 is the region code for PS3 US Armored Core Verdict Day on disc, replace as necessary.  
 
 The server makes keys under the "Saved/SERVER_NAME" folder,  
 SERVER_NAME being the name of the server instance.  
