@@ -1,9 +1,8 @@
-﻿using AcOpenServer.Core.Crypto;
-using AcOpenServer.Core.Logging;
-using AcOpenServer.Core.Network;
+﻿using AcOpenServer.Core.Logging;
 using AcOpenServer.Network.Clients;
+using AcOpenServer.Network.Streams;
+using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Services
@@ -11,70 +10,68 @@ namespace AcOpenServer.Network.Services
     public class AuthService : IService
     {
         private readonly Logger Log;
-        private readonly string ServerName;
-        private readonly NetConnection Connection;
-        private readonly RSAKey ServerKey;
-        private readonly int AuthPort;
-        private readonly double ClientTimeout;
+        private readonly SVFWMessageListener Listener;
+        private readonly List<Task> ClientReceiveTasks;
+        private readonly List<Task> ClientSendTasks;
         private bool disposedValue;
 
-        private readonly List<AuthClient> Clients;
+        public bool IsDisposed => disposedValue;
 
-        public AuthService(string serverName, IPAddress serverIP, RSAKey serverKey, int authPort, double clientTimeout, Logger log)
+        public AuthService(SVFWMessageListener listener, Logger log)
         {
             Log = log;
-            ServerName = serverName;
-            Connection = new NetConnection(nameof(AuthService), serverIP, authPort);
-            Connection.Accepted += OnAccepted;
-            ServerKey = serverKey;
-            AuthPort = authPort;
-            ClientTimeout = clientTimeout;
-
-            Clients = [];
+            Listener = listener;
+            ClientReceiveTasks = [];
+            ClientSendTasks = [];
         }
 
-        public bool Start()
+        #region IO
+
+        public Task ListenAsync()
         {
-            Connection.Listen();
-            Log.Info($"Started {ServerName} server service {nameof(AuthService)} on port {AuthPort}");
-            return true;
+            Log.Info($"Started {nameof(AuthService)}");
+            Listener.Accepted += OnAccepted;
+            return Listener.ListenAsync();
         }
 
-        public bool End()
+        #endregion
+
+        #region Callbacks
+
+        private void OnAccepted(object? sender, SVFWMessageClient client)
         {
-            Log.Info($"Ending {ServerName} server service {nameof(AuthService)} on port {AuthPort}");
-            Dispose();
-            return true;
+            var authClient = new AuthClient(client, Log);
+            Log.Info($"Client connected: {authClient.Name}");
+
+            ClientReceiveTasks.Add(authClient.ReceiveAsync().ContinueWith(ClientReceiveCleanup));
+            ClientSendTasks.Add(authClient.SendAsync().ContinueWith(ClientSendCleanup));
         }
 
-        public async Task UpdateAsync()
-        {
-            await UpdateClientsAsync();
-        }
+        #endregion
 
-        private async Task UpdateClientsAsync()
+        #region Cleanup
+
+        private void ClientReceiveCleanup(Task task)
         {
-            for (int i = Clients.Count - 1; i >= 0; i--)
+            if (task.Exception != null)
             {
-                var client = Clients[i];
-                if (!await client.UpdateAsync())
-                {
-                    client.Dispose();
-                    Clients.RemoveAt(i);
-                }
+                Log.Error($"Client disconnected due to an error: {task.Exception}");
             }
+
+            ClientReceiveTasks.Remove(task);
         }
 
-        private void OnAccepted(object? sender, NetConnectionEventArgs e)
+        private void ClientSendCleanup(Task task)
         {
-            var connection = e.Connection;
-            if (connection != null)
+            if (task.Exception != null)
             {
-                var client = new AuthClient($"{ServerName}:{connection.GetName()}", connection, ServerKey, AuthPort, ClientTimeout, Log);
-                Log.Info($"Client connected: {client.Name}");
-                Clients.Add(client);
+                Log.Error($"Client disconnected due to an error: {task.Exception}");
             }
+
+            ClientSendTasks.Remove(task);
         }
+
+        #endregion
 
         #region IDisposable
 
@@ -84,14 +81,9 @@ namespace AcOpenServer.Network.Services
             {
                 if (disposing)
                 {
-                    Connection.Dispose();
-
-                    foreach (var client in Clients)
-                    {
-                        client.Dispose();
-                    }
-
-                    Clients.Clear();
+                    Listener.Dispose();
+                    ClientReceiveTasks.Clear();
+                    ClientSendTasks.Clear();
                 }
 
                 disposedValue = true;
@@ -103,6 +95,28 @@ namespace AcOpenServer.Network.Services
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             System.GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region IAsyncDisposable
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!disposedValue)
+            {
+                Listener.Dispose();
+                foreach (var task in ClientReceiveTasks)
+                    await task;
+
+                foreach (var task in ClientSendTasks)
+                    await task;
+
+                ClientReceiveTasks.Clear();
+                ClientSendTasks.Clear();
+                disposedValue = true;
+            }
+            GC.SuppressFinalize(this);
         }
 
         #endregion

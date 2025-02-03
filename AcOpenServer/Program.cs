@@ -31,8 +31,7 @@ namespace AcOpenServer
         {
             Directory.CreateDirectory(ServersFolder);
             var serverManager = new ServerManager(ServersFolder, Log);
-            Console.CancelKeyPress += (sender, e) => serverManager.Quit();
-            await serverManager.RunAsync();
+            await serverManager.StartServersAsync();
         }
 
         #endregion

@@ -3,10 +3,8 @@ using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Services
 {
-    public interface IService : IDisposable
+    public interface IService : IDisposable, IAsyncDisposable
     {
-        public bool Start();
-        public bool End();
-        public Task UpdateAsync();
+        public Task ListenAsync();
     }
 }

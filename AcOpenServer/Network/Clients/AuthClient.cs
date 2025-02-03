@@ -1,89 +1,47 @@
 ﻿using AcOpenServer.Core.Crypto;
 using AcOpenServer.Core.Logging;
-using AcOpenServer.Core.Network;
 using AcOpenServer.Core.Utilities;
+using AcOpenServer.Network.Exceptions;
 using AcOpenServer.Network.Streams;
 using Google.Protobuf;
 using SVFWRequestMessage;
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Clients
 {
-    public class AuthClient : IDisposable
+    public class AuthClient : IDisposable, IAsyncDisposable
     {
         private readonly Logger Log;
-        private readonly NetConnection Connection;
-        private readonly SVFWPacketStream PacketStream;
-        private readonly SVFWMessageStream MessageStream;
-        private readonly int AuthPort;
-        private readonly double Timeout;
+        private readonly SVFWMessageClient Client;
+        private readonly Queue<Task> SendQueue;
         private AuthClientState AuthState;
-        private DateTime LastMessageTime;
         private bool disposedValue;
 
-        public string Name { get; init; }
+        public string Name => Client.Name;
+        public bool IsDisposed => disposedValue;
 
-        public AuthClient(string name, NetConnection connection, RSAKey serverKey, int authPort, double timeout, Logger log)
+        public AuthClient(SVFWMessageClient client, Logger log)
         {
             Log = log;
-            Connection = connection;
-            PacketStream = new SVFWPacketStream(Connection, Log);
-            MessageStream = new SVFWMessageStream(PacketStream, serverKey, Log);
-
-            AuthPort = authPort;
-            Timeout = timeout;
+            Client = client;
             AuthState = AuthClientState.WaitingForHandshakeRequest;
-            LastMessageTime = DateTime.Now;
-
-            Name = name;
+            SendQueue = [];
         }
 
-        public async Task<bool> UpdateAsync()
+        private void Service(SVFWMessage message)
         {
-            if (DateTime.Now.Subtract(LastMessageTime).TotalSeconds >= Timeout)
-            {
-                Log.Warning($"Client {Name} has timed out.");
-                return false;
-            }
-
-            if (!await PacketStream.UpdateAsync())
-            {
-                Log.Warning($"Disconnecting client due to a packet stream error.");
-                return false;
-            }
-
-            if (!MessageStream.Receive(out SVFWMessage? message, out StreamErrorCode error))
-            {
-                if (error == StreamErrorCode.Error)
-                {
-                    Log.Warning($"Disconnecting client due to a message stream error.");
-                    return false;
-                }
-
-                Log.Debug($"Waiting on {AuthState} from client {Name}");
-                LastMessageTime = DateTime.Now;
-                return true;
-            }
-
             switch (AuthState)
             {
                 case AuthClientState.WaitingForHandshakeRequest:
-                    if (!ValidState<RequestHandshake>(message.Header.MessageType, SVFWMessageType.RequestHandshake))
-                    {
-                        return false;
-                    }
-
-                    if (!ParseMessage(message, out RequestHandshake? handshake))
-                    {
-                        return false;
-                    }
+                    ValidateState<RequestHandshake>(message.Header.MessageType, SVFWMessageType.RequestHandshake);
+                    var handshake = Parse<RequestHandshake>(message);
 
                     var cwcCipher = new CWCCipher(new CWCKey(handshake.AesCwcKey.Memory.ToArray()));
-                    MessageStream.SetCipher(cwcCipher, cwcCipher);
+                    Client.SetCipher(cwcCipher, cwcCipher);
 
-                    MessageStream.CipherEnabled = false;
+                    Client.CipherEnabled = false;
                     byte[] responseBuffer = new byte[27];
                     var rand = new Random();
                     rand.NextBytes(responseBuffer);
@@ -92,37 +50,27 @@ namespace AcOpenServer.Network.Clients
                         responseBuffer[i] = 0;
 
                     var handshakeResponseMessage = new SVFWMessage(responseBuffer);
-                    if (!await SendMessage<RequestHandshakeResponse>(handshakeResponseMessage))
-                    {
-                        return false;
-                    }
+                    SendQueue.Enqueue(Client.SendAsync(handshakeResponseMessage, SVFWMessageType.Reply, message.Header.MessageIndex));
 
                     Log.Debug($"Sent {nameof(RequestHandshakeResponse)} to client {Name}");
-                    MessageStream.CipherEnabled = true;
+                    Client.CipherEnabled = true;
                     AuthState = AuthClientState.WaitingForServiceStatusRequest;
                     break;
                 case AuthClientState.WaitingForServiceStatusRequest:
-                    if (!ValidState<GetServiceStatus>(message.Header.MessageType, SVFWMessageType.GetServiceStatus))
-                    {
-                        return false;
-                    }
+                    ValidateState<GetServiceStatus>(message.Header.MessageType, SVFWMessageType.GetServiceStatus);
+                    var serviceStatus = Parse<GetServiceStatus>(message);
 
-                    if (!ParseMessage(message, out GetServiceStatus? serviceStatus))
-                    {
-                        return false;
-                    }
+                    Log.Info($"User {serviceStatus.PlayerId} is trying to authenticate.");
 
                     var serviceStatusResponse = new GetServiceStatusResponse();
+                    //serviceStatusResponse.Id = serviceStatus.Id;
                     serviceStatusResponse.PlayerId = serviceStatus.PlayerId;
-                    serviceStatusResponse.Id = serviceStatus.Id;
-                    serviceStatusResponse.Unknown1 = 0;
-                    serviceStatusResponse.AppVersion = serviceStatus.AppVersion;
+                    //serviceStatusResponse.Unknown1 = 0;
+                    //serviceStatusResponse.AppVersion = serviceStatus.AppVersion;
 
-                    if (!await SendMessage<GetServiceStatusResponse>(serviceStatusResponse, message.Header.MessageIndex))
-                    {
-                        return false;
-                    }
+                    SendQueue.Enqueue(Client.SendAsync(serviceStatusResponse, SVFWMessageType.Reply, message.Header.MessageIndex));
 
+                    Log.Debug($"Sent {nameof(GetServiceStatusResponse)} to client {Name}");
                     AuthState = AuthClientState.Complete;
                     break;
                 case AuthClientState.Complete:
@@ -130,62 +78,59 @@ namespace AcOpenServer.Network.Clients
                     Log.Debug(message.Payload.ToHexView(0x10));
                     break;
             }
-
-            return true;
         }
 
         #region Helpers
 
-        private bool ValidState<T>(SVFWMessageType type, SVFWMessageType expectedType)
+        private void ValidateState<T>(SVFWMessageType type, SVFWMessageType expectedType)
         {
             if (type != expectedType)
             {
-                Log.Warning($"Disconnecting client {Name} due to an invalid message for {typeof(T).Name}: {type}");
-                return false;
+                throw new AuthException($"Disconnecting client {Name} due to an invalid message for {typeof(T).Name}: {type}");
             }
-
-            return true;
         }
 
-        private bool ParseMessage<T>(SVFWMessage message, [NotNullWhen(true)] out T? result) where T : IMessage, new()
+        private T Parse<T>(SVFWMessage message) where T : IMessage, new()
         {
             string typeName = typeof(T).Name;
             Log.Info($"Client {Name} has sent {typeName}.");
 
             try
             {
-                result = ProtobufHelper.ParseFrom<T>(message.Payload);
+                T result = ProtobufHelper.ParseFrom<T>(message.Payload);
+                return result;
             }
             catch (Exception ex)
             {
-                Log.Warning($"Disconnecting client {Name} due to a {typeName} parsing failure:\n{ex}");
-                result = default;
-                return false;
+                throw new AuthException($"Disconnecting client {Name} due to a {typeName} parsing failure.", ex);
             }
-
-            return true;
         }
 
-        private async Task<bool> SendMessage<T>(SVFWMessage message)
-        {
-            if (!await MessageStream.SendAsync(message, SVFWMessageType.Reply, message.Header.MessageIndex))
-            {
-                Log.Warning($"Disconnecting client {Name} due to failure to send {typeof(T).Name}.");
-                return false;
-            }
+        #endregion
 
-            return true;
+        #region IO
+
+        public Task ReceiveAsync()
+        {
+            Client.Received += OnReceived;
+            return Client.ReceiveAsync();
         }
 
-        private async Task<bool> SendMessage<T>(IMessage message, uint messageIndex)
+        public async Task SendAsync()
         {
-            if (!await MessageStream.SendAsync(message, SVFWMessageType.Reply, messageIndex))
+            while (SendQueue.TryDequeue(out Task? sendTask))
             {
-                Log.Warning($"Disconnecting client {Name} due to failure to send {typeof(T).Name}.");
-                return false;
+                await sendTask;
             }
+        }
 
-            return true;
+        #endregion
+
+        #region Callbacks
+
+        private void OnReceived(object? sender, SVFWMessage message)
+        {
+            Service(message);
         }
 
         #endregion
@@ -198,9 +143,8 @@ namespace AcOpenServer.Network.Clients
             {
                 if (disposing)
                 {
-                    MessageStream.Dispose();
-                    PacketStream.Dispose();
-                    Connection.Dispose();
+                    Client.Dispose();
+                    SendQueue.Clear();
                 }
 
                 disposedValue = true;
@@ -212,6 +156,32 @@ namespace AcOpenServer.Network.Clients
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region IAsyncDisposable
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!disposedValue)
+            {
+                Client.Dispose();
+                await SendAsync();
+                SendQueue.Clear();
+
+                disposedValue = true;
+            }
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return Name;
         }
 
         #endregion

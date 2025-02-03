@@ -15,16 +15,15 @@ namespace AcOpenServer.Network
         private const string ServerConfigFileName = "config.json";
 
         private readonly Logger Log;
-        private readonly string ServersFolder;
         private readonly List<Server> Servers;
-        private bool QuitServers;
+        private readonly List<Task> ServerTasks;
 
         public ServerManager(string serversFolder, Logger log)
         {
             Log = log;
-            ServersFolder = serversFolder;
             Servers = [];
-            
+            ServerTasks = [];
+
             bool serverFound = false;
             foreach (var folder in Directory.EnumerateDirectories(serversFolder))
             {
@@ -57,70 +56,30 @@ namespace AcOpenServer.Network
             return new Server(serverFolder, DefaultServerName, key, config, Log);
         }
 
-        private async Task StartServersAsync()
+        public Task StartServersAsync()
         {
             Log.Info("Starting servers...");
-            for (int i = Servers.Count - 1; i >= 0; i--)
-            {
-                var server = Servers[i];
-                if (!await server.StartAsync())
-                {
-                    Log.Error($"Failed to start server: {server.Name}");
-                    Servers.RemoveAt(i);
-                }
-                else
-                {
-                    Log.Info($"Started server: {server.Name}");
-                }
-            }
-        }
-
-        private void EndServers()
-        {
-            Log.Info("Shutting servers down...");
             foreach (var server in Servers)
             {
-                if (!server.End())
-                {
-                    Log.Error($"Failed to shutdown server: {server.Name}");
-                }
-                else
-                {
-                    Log.Info($"Shutdown server: {server.Name}");
-                }
+                ServerTasks.Add(server.StartAsync().ContinueWith(ServerCleanup));
+                Log.Info($"Started {server}");
             }
+
+            return Task.WhenAll(ServerTasks);
         }
 
-        public async Task RunAsync()
+        #region Cleanup
+
+        private void ServerCleanup(Task task)
         {
-            Log.Info($"Starting run...");
-            await StartServersAsync();
-            if (Servers.Count == 0)
+            if (task.Exception != null)
             {
-                Log.Warning("No servers were started, quitting.");
-                return;
+                Log.Error($"Client disconnected due to an error: {task.Exception}");
             }
 
-            while (!QuitServers)
-            {
-                if (Servers.Count == 0)
-                {
-                    Log.Info($"No servers are running, quitting.");
-                    return;
-                }
-
-                foreach (Server server in Servers)
-                {
-                    await server.UpdateAsync();
-                }
-            }
-
-            EndServers();
+            ServerTasks.Remove(task);
         }
 
-        public void Quit()
-        {
-            QuitServers = true;
-        }
+        #endregion
     }
 }

@@ -1,70 +1,37 @@
-﻿using AcOpenServer.Core.Crypto;
-using AcOpenServer.Core.Logging;
-using AcOpenServer.Core.Network;
-using AcOpenServer.Network.Services;
+﻿using AcOpenServer.Core.Logging;
+using AcOpenServer.Network.Exceptions;
 using AcOpenServer.Network.Streams;
 using SVFWRequestMessage;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Clients
 {
-    public class LoginClient : IDisposable
+    public class LoginClient : IDisposable, IAsyncDisposable
     {
         private readonly Logger Log;
-        private readonly NetConnection Connection;
-        private readonly SVFWPacketStream PacketStream;
-        private readonly SVFWMessageStream MessageStream;
+        private readonly SVFWMessageClient Client;
+        private readonly Queue<Task> SendQueue;
         private readonly int AuthPort;
-        private readonly double Timeout;
-        private DateTime LastMessageTime;
         private bool disposedValue;
 
-        public string Name { get; init; }
+        public string Name => Client.Name;
+        public bool IsDisposed => disposedValue;
 
-        public LoginClient(string name, NetConnection connection, RSAKey serverKey, int authPort, double timeout, Logger log)
+        public LoginClient(SVFWMessageClient client, int authPort, Logger log)
         {
             Log = log;
-            Connection = connection;
-            PacketStream = new SVFWPacketStream(Connection, Log);
-            MessageStream = new SVFWMessageStream(PacketStream, serverKey, Log);
+            Client = client;
             AuthPort = authPort;
-            Timeout = timeout;
-            LastMessageTime = DateTime.Now;
-
-            Name = name;
+            SendQueue = [];
         }
 
-        public async Task<bool> UpdateAsync()
+        private void Service(SVFWMessage message)
         {
-            if (DateTime.Now.Subtract(LastMessageTime).TotalSeconds >= Timeout)
-            {
-                Log.Warning($"Client {Name} has timed out.");
-                return false;
-            }
-
-            if (!await PacketStream.UpdateAsync())
-            {
-                Log.Warning($"Disconnecting client due to a packet stream error.");
-                return false;
-            }
-
-            if (!MessageStream.Receive(out SVFWMessage? message, out StreamErrorCode error))
-            {
-                if (error == StreamErrorCode.Error)
-                {
-                    Log.Warning($"Disconnecting client due to a message stream error.");
-                    return false;
-                }
-
-                LastMessageTime = DateTime.Now;
-                return true;
-            }
-
             if (message.Header.MessageType != SVFWMessageType.RequestQueryLoginServerInfo)
             {
-                Log.Warning($"Disconnecting client {Name} due to unexpected message type: {message.Header.MessageType}.");
-                return false;
+                throw new LoginException($"Received an unexpected message type from client; Received: {message.Header.MessageType}; Expected: {SVFWMessageType.RequestQueryLoginServerInfo}");
             }
 
             RequestQueryLoginServerInfo request;
@@ -74,24 +41,44 @@ namespace AcOpenServer.Network.Clients
             }
             catch (Exception ex)
             {
-                Log.Warning($"Disconnecting client {Name} due to message parsing failure:\n{ex}");
-                return false;
+                throw new LoginException("Failed to parse message from client as a protobuf.", ex);
             }
 
             Log.Info($"User {request.PlayerId} is trying to login.");
-
-            var response = new RequestQueryLoginServerInfoResponse();
-            response.Port = AuthPort;
-
-            if (!await MessageStream.SendAsync(response, SVFWMessageType.Reply, message.Header.MessageIndex))
+            var response = new RequestQueryLoginServerInfoResponse
             {
-                Log.Warning($"Disconnecting client {Name} due to failure to send {nameof(RequestQueryLoginServerInfoResponse)}.");
-                return false;
-            }
+                Port = AuthPort
+            };
 
-            Log.Info($"Client {Name} was sent the authentication server details.");
-            return true;
+            SendQueue.Enqueue(Client.SendAsync(response, SVFWMessageType.Reply, message.Header.MessageIndex));
         }
+
+        #region IO
+
+        public Task ReceiveAsync()
+        {
+            Client.Received += OnReceived;
+            return Client.ReceiveAsync();
+        }
+
+        public async Task SendAsync()
+        {
+            while (SendQueue.TryDequeue(out Task? sendTask))
+            {
+                await sendTask;
+            }
+        }
+
+        #endregion
+
+        #region Callbacks
+
+        private void OnReceived(object? sender, SVFWMessage message)
+        {
+            Service(message);
+        }
+
+        #endregion
 
         #region IDisposable
 
@@ -101,9 +88,8 @@ namespace AcOpenServer.Network.Clients
             {
                 if (disposing)
                 {
-                    MessageStream.Dispose();
-                    PacketStream.Dispose();
-                    Connection.Dispose();
+                    Client.Dispose();
+                    SendQueue.Clear();
                 }
 
                 disposedValue = true;
@@ -115,6 +101,32 @@ namespace AcOpenServer.Network.Clients
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region IAsyncDisposable
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!disposedValue)
+            {
+                Client.Dispose();
+                await SendAsync();
+                SendQueue.Clear();
+
+                disposedValue = true;
+            }
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return Name;
         }
 
         #endregion

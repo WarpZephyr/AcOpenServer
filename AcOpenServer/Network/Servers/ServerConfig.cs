@@ -28,10 +28,8 @@ namespace AcOpenServer.Network.Servers
         public int LoginPort { get; set; }
         public int AuthPort { get; set; }
         public int GamePort { get; set; }
-        public double ClientTimeout { get; set; }
         public bool LogInfo { get; set; }
         public bool LogWarnings { get; set; }
-        public bool LogErrors { get; set; }
 
         public ServerConfig()
         {
@@ -44,10 +42,8 @@ namespace AcOpenServer.Network.Servers
             LoginPort = 50011;
             AuthPort = 50008;
             GamePort = 50010;
-            ClientTimeout = 120.0d;
             LogInfo = true;
             LogWarnings = true;
-            LogErrors = true;
         }
 
         public static bool Load(string path, [NotNullWhen(true)] out ServerConfig? config)

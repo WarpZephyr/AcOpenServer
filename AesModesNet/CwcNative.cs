@@ -95,7 +95,7 @@ namespace AesModesNet
         /// <param name="ctx">The mode context.</param>
         [LibraryImport(DLLNAME)]
         [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
-        public static unsafe partial int cwc_init_and_key(byte[] key, uint key_len, cwc_ctx* ctx);             
+        public static unsafe partial int cwc_init_and_key(byte[] key, uint key_len, void* ctx);             
 
         /// <summary>
         /// Clean up and end operation.
@@ -104,7 +104,7 @@ namespace AesModesNet
         /// <returns></returns>
         [LibraryImport(DLLNAME)]
         [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
-        public static unsafe partial int cwc_end(cwc_ctx* ctx);            
+        public static unsafe partial int cwc_end(void* ctx);            
 
         /// <summary>
         /// Encrypt an entire message.
@@ -120,7 +120,7 @@ namespace AesModesNet
         /// <param name="ctx">The mode context.</param>
         [LibraryImport(DLLNAME)]
         [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
-        public static unsafe partial int cwc_encrypt_message(byte[] iv, uint iv_len, byte[] hdr, uint hdr_len, byte[] msg, uint msg_len, byte[] tag, uint tag_len, cwc_ctx* ctx);    
+        public static unsafe partial int cwc_encrypt_message(byte[] iv, uint iv_len, byte[] hdr, uint hdr_len, byte[] msg, uint msg_len, byte[] tag, uint tag_len, void* ctx);    
 
         /// <summary>
         /// Decrypt an entire message.
@@ -137,7 +137,7 @@ namespace AesModesNet
         /// <returns>RETURN_GOOD is returned if the input tag matches that for the decrypted message.</returns>
         [LibraryImport(DLLNAME)]
         [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
-        public static unsafe partial int cwc_decrypt_message(byte[] iv, uint iv_len, byte[] hdr, uint hdr_len, byte[] msg, uint msg_len, byte[] tag, uint tag_len, cwc_ctx* ctx);
+        public static unsafe partial int cwc_decrypt_message(byte[] iv, uint iv_len, byte[] hdr, uint hdr_len, byte[] msg, uint msg_len, byte[] tag, uint tag_len, void* ctx);
 
         #endregion
 

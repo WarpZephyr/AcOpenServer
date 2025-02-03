@@ -1,11 +1,15 @@
 ﻿using AcOpenServer.Core.Crypto;
 using AcOpenServer.Core.Logging;
+using AcOpenServer.Core.Network;
 using AcOpenServer.Network.Services;
+using AcOpenServer.Network.Streams;
+using OpenSSL.Crypto;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Servers
@@ -18,7 +22,6 @@ namespace AcOpenServer.Network.Servers
 
         private readonly Logger Log;
         private readonly string ServerFolder;
-        private readonly List<IService> Services;
         private ServerConfig? Config;
         private RSAKey? PrivateKey;
         private IPAddress? PublicIP;
@@ -30,7 +33,6 @@ namespace AcOpenServer.Network.Servers
         {
             Log = log;
             ServerFolder = serverFolder;
-            Services = [];
 
             Name = Path.GetFileName(serverFolder);
         }
@@ -41,7 +43,6 @@ namespace AcOpenServer.Network.Servers
             ServerFolder = serverFolder;
             PrivateKey = privateKey;
             Config = config;
-            Services = [];
 
             Name = name;
         }
@@ -89,10 +90,7 @@ namespace AcOpenServer.Network.Servers
                 Log.EnabledChannels |= Logger.LogChannelFlags.Warning;
             }
 
-            if (Config.LogErrors)
-            {
-                Log.EnabledChannels |= Logger.LogChannelFlags.Error;
-            }
+            Log.EnabledChannels |= Logger.LogChannelFlags.Error;
 
             if (PrivateKey == null)
             {
@@ -186,36 +184,16 @@ namespace AcOpenServer.Network.Servers
             Log.Info($"Private ip: {PrivateIP}");
 
             var serverIP = new IPAddress([0, 0, 0, 0]);
-            var loginService = new LoginService(Name, serverIP, PrivateKey, Config.LoginPort, Config.AuthPort, Config.ClientTimeout, Log);
-            var authService = new AuthService(Name, serverIP, PrivateKey, Config.AuthPort, Config.ClientTimeout, Log);
 
-            Services.Add(loginService);
-            Services.Add(authService);
-
-            StartServices();
+            var loginService = new LoginService(CreateListener(serverIP, Config.LoginPort, PrivateKey), Config.AuthPort, Log);
+            var authService = new AuthService(CreateListener(serverIP, Config.AuthPort, PrivateKey), Log);
+            var loginTask = loginService.ListenAsync();
+            var authTask = authService.ListenAsync();
+            await Task.WhenAll(loginTask, authTask);
             return true;
         }
 
-        public bool End()
-        {
-            return true;
-        }
-
-        public async Task UpdateAsync()
-        {
-            foreach (var service in Services)
-            {
-                await service.UpdateAsync();
-            }
-        }
-
-        private void StartServices()
-        {
-            foreach (var service in Services)
-            {
-                service.Start();
-            }
-        }
+        #region Helpers
 
         private bool LoadKey(string filename, bool isPublic, [NotNullWhen(true)] out RSAKey? key)
         {
@@ -239,5 +217,27 @@ namespace AcOpenServer.Network.Servers
                 return false;
             }
         }
+
+        private SVFWMessageListener CreateListener(IPAddress serverIP, int port, RSAKey key)
+        {
+            var tcpListener = new TcpListener(serverIP, port);
+            var netListener = new NetListener(tcpListener);
+
+            var decryptionCipher = new RSACipher(key, RSA.Padding.OAEP);
+            var encryptionCipher = new RSACipher(key, RSA.Padding.X931);
+            var messageListener = new SVFWMessageListener(netListener, encryptionCipher, decryptionCipher);
+            return messageListener;
+        }
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        #endregion
     }
 }

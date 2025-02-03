@@ -1,36 +1,37 @@
 ﻿using AcOpenServer.Core.Buffers;
 using AcOpenServer.Core.Crypto;
-using AcOpenServer.Core.Logging;
+using AcOpenServer.Network.Exceptions;
 using Google.Protobuf;
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using static OpenSSL.Crypto.RSA;
 
 namespace AcOpenServer.Network.Streams
 {
-    public class SVFWMessageStream : IDisposable
+    public class SVFWMessageClient : IDisposable
     {
         private const int MessageHeaderSize = 12;
         private const int MessageResponseHeaderSize = 16;
-
-        private readonly Logger Log;
-        private readonly SVFWPacketStream PacketStream;
+        private readonly SVFWPacketClient Client;
         private ICipher EncryptionCipher;
         private ICipher DecryptionCipher;
         private bool disposedValue;
 
         public bool CipherEnabled { get; set; }
+        public string Name => Client.Name;
         public bool IsDisposed => disposedValue;
 
-        public SVFWMessageStream(SVFWPacketStream packetStream, RSAKey serverKey, Logger log)
+        public event EventHandler<SVFWMessage>? Received;
+
+        public SVFWMessageClient(SVFWPacketClient client, ICipher encryptionCipher, ICipher decryptionCipher)
         {
-            Log = log;
-            PacketStream = packetStream;
-            EncryptionCipher = new RSACipher(serverKey, Padding.X931);
-            DecryptionCipher = new RSACipher(serverKey, Padding.OAEP);
+            Client = client;
+            EncryptionCipher = encryptionCipher;
+            DecryptionCipher = decryptionCipher;
             CipherEnabled = true;
         }
+
+        #region Cipher
 
         public void SetCipher(ICipher encryptionCipher, ICipher decryptionCipher)
         {
@@ -38,41 +39,17 @@ namespace AcOpenServer.Network.Streams
             DecryptionCipher = decryptionCipher;
         }
 
-        public bool Receive([NotNullWhen(true)] out SVFWMessage? message, out StreamErrorCode error)
+        #endregion
+
+        #region IO
+
+        public Task ReceiveAsync()
         {
-            if (!PacketStream.Recieve(out SVFWPacket? packet))
-            {
-                message = null;
-                error = StreamErrorCode.NotSuccess;
-                return false;
-            }
-
-            if (!ReadMessage(packet.Payload, out message))
-            {
-                Log.Error("Failed to parse message.");
-                error =  StreamErrorCode.Error;
-                return false;
-            }
-
-            if (CipherEnabled)
-            {
-                try
-                {
-                    message.Payload = DecryptionCipher.Decrypt(message.Payload);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"Failed to decrypt message payload:\n{ex}");
-                    error = StreamErrorCode.Error;
-                    return false;
-                }
-            }
-
-            error = StreamErrorCode.Success;
-            return true;
+            Client.Received += OnReceived;
+            return Client.ReceiveAsync();
         }
 
-        public async Task<bool> SendAsync(SVFWMessage message, SVFWMessageType messageType, uint messageIndex)
+        public Task SendAsync(SVFWMessage message, SVFWMessageType messageType, uint messageIndex)
         {
             message.Header.MessageType = messageType;
             message.Header.MessageIndex = messageIndex;
@@ -97,53 +74,51 @@ namespace AcOpenServer.Network.Streams
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Failed to encrypt message payload:\n{ex}");
-                    Dispose();
-                    return false;
+                    throw new SVFWMessageException($"Failed to encrypt message payload:\n{ex}");
                 }
             }
 
-            if (!WriteMessage(message, out SVFWPacket? packet))
-            {
-                Log.Error($"Failed to serialize message to packet.");
-                Dispose();
-                return false;
-            }
-
-            if (!await PacketStream.SendAsync(packet))
-            {
-                Log.Error("Failed to send message.");
-                Dispose();
-                return false;
-            }
-
-            return true;
+            return Client.SendAsync(Write(message));
         }
 
-        public async Task<bool> SendAsync(IMessage protobuf, SVFWMessageType messageType, uint messageIndex)
+        public Task SendAsync(IMessage protobuf, SVFWMessageType messageType, uint messageIndex)
         {
-            try
-            {
-                byte[] payload = protobuf.ToByteArray();
-                var message = new SVFWMessage(payload);
-                return await SendAsync(message, messageType, messageIndex);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Failed to seralize protobuf payload:\n{ex}");
-                return false;
-            }
+            byte[] payload = protobuf.ToByteArray();
+            var message = new SVFWMessage(payload);
+            return SendAsync(message, messageType, messageIndex);
         }
 
-        #region Helpers
+        #endregion
 
-        private bool ReadMessage(byte[] buffer, [NotNullWhen(true)] out SVFWMessage? message)
+        #region Callbacks
+
+        private void OnReceived(object? sender, SVFWPacket packet)
+        {
+            var message = Read(packet.Payload);
+            if (CipherEnabled)
+            {
+                try
+                {
+                    message.Payload = DecryptionCipher.Decrypt(message.Payload);
+                }
+                catch (Exception ex)
+                {
+                    throw new SVFWMessageException($"Failed to decrypt message payload:\n{ex}");
+                }
+            }
+
+            Received?.Invoke(this, message);
+        }
+
+        #endregion
+
+        #region Serialization
+
+        private static SVFWMessage Read(byte[] buffer)
         {
             if (buffer.Length < MessageHeaderSize)
             {
-                Log.Error($"Message is too small to have a header; Size: {buffer.Length}; Minimum Expected: {MessageHeaderSize}");
-                message = null;
-                return false;
+                throw new SVFWMessageException($"Message is too small to have a header; Size: {buffer.Length}; Minimum Expected: {MessageHeaderSize}");
             }
 
             var header = BufferReadHelper.Read<SVFWMessageHeader>(buffer, 0);
@@ -156,9 +131,7 @@ namespace AcOpenServer.Network.Streams
                 payloadOffset += MessageResponseHeaderSize;
                 if (buffer.Length < payloadOffset)
                 {
-                    Log.Error($"Message is a reply, but is too small to have a response header; Size: {buffer.Length}; Minimum Expected: {payloadOffset}");
-                    message = null;
-                    return false;
+                    throw new SVFWMessageException($"Message is a reply, but is too small to have a response header; Size: {buffer.Length}; Minimum Expected: {payloadOffset}");
                 }
 
                 responseHeader = BufferReadHelper.Read<SVFWMessageResponseHeader>(buffer, MessageHeaderSize);
@@ -172,11 +145,10 @@ namespace AcOpenServer.Network.Streams
             int payloadLength = buffer.Length - payloadOffset;
             var payload = payloadLength == payloadOffset ? [] : buffer[payloadOffset..];
 
-            message = new SVFWMessage(header, responseHeader, payload);
-            return true;
+            return new SVFWMessage(header, responseHeader, payload);
         }
 
-        private bool WriteMessage(SVFWMessage message, [NotNullWhen(true)] out SVFWPacket? packet)
+        private static SVFWPacket Write(SVFWMessage message)
         {
             bool isReply = message.Header.MessageType == SVFWMessageType.Reply;
             int messageSize = MessageHeaderSize
@@ -193,21 +165,14 @@ namespace AcOpenServer.Network.Streams
             {
                 payloadOffset += MessageResponseHeaderSize;
                 var nullableResponseHeader = message.ResponseHeader;
-                if (nullableResponseHeader == null)
-                {
-                    Log.Error("Message is a reply but the response header is null.");
-                    packet = null;
-                    return false;
-                }
-
+                Debug.Assert(nullableResponseHeader != null);
                 var responseHeader = nullableResponseHeader.Value;
                 responseHeader.SwapEndian();
                 BufferWriteHelper.Write(responseHeader, buffer, MessageHeaderSize);
             }
 
             Array.Copy(message.Payload, 0, buffer, payloadOffset, message.Payload.Length);
-            packet = new SVFWPacket(default, buffer);
-            return true;
+            return new SVFWPacket(default, buffer);
         }
 
         #endregion
@@ -220,7 +185,7 @@ namespace AcOpenServer.Network.Streams
             {
                 if (disposing)
                 {
-                    PacketStream.Dispose();
+                    Client.Dispose();
                 }
 
                 disposedValue = true;
@@ -232,6 +197,15 @@ namespace AcOpenServer.Network.Streams
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return Name;
         }
 
         #endregion
