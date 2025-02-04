@@ -19,7 +19,9 @@ message RequestQueryLoginServerInfo {
 
 // Send in response to RequestQueryLoginServerInfo
 message RequestQueryLoginServerInfoResponse {
-    required int64 port = 1;
+    required uint32 port = 1;
+    optional uint32 unk2 = 2; // IP address?
+    optional uint32 unk3 = 3;
 }
 
 // ------------------------------------------------------------------------------------------------------------
@@ -39,10 +41,10 @@ message RequestHandshakeResponse {
 // Sent after handshake, all seemingly constant data (apart from the player_id). 
 // Presumably used for ensure we are connecting to a compatible server?
 message GetServiceStatus {
-    required int64 id = 1;              
+    required uint32 id = 1;              
     required string player_id = 2;
-    optional string unknown_1 = 3;
-    required int64 app_version = 4;
+    optional string unk3 = 3;
+    required uint64 app_version = 4;
 }
 
 // Response to GetServiceStatus, contains identical data to what is sent
@@ -50,8 +52,8 @@ message GetServiceStatus {
 // or something we would get different responses.
 // If we are on an older version of the game an empty response is sent back for this.
 message GetServiceStatusResponse {
-    optional int64 id = 1;
+    optional uint32 id = 1;
     optional string player_id = 2;
-    optional int64 unknown_1 = 3;
-    optional int64 app_version = 4;
+    optional int32 unk3 = 3;
+    optional int32 app_version = 4;
 }

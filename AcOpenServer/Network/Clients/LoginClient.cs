@@ -45,9 +45,12 @@ namespace AcOpenServer.Network.Clients
             }
 
             Log.Info($"User {request.PlayerId} is trying to login.");
+            if (request.HasF2)
+                Log.Debug($"User f2 is {request.F2}");
+            Log.Debug($"User app version is 0x{request.AppVersion:X2}");
             var response = new RequestQueryLoginServerInfoResponse
             {
-                Port = AuthPort
+                Port = (uint)AuthPort,
             };
 
             SendQueue.Enqueue(Client.SendAsync(response, SVFWMessageType.Reply, message.Header.MessageIndex));

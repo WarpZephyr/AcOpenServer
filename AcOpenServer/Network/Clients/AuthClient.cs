@@ -61,12 +61,16 @@ namespace AcOpenServer.Network.Clients
                     var serviceStatus = Parse<GetServiceStatus>(message);
 
                     Log.Info($"User {serviceStatus.PlayerId} is trying to authenticate.");
+                    Log.Debug($"User id is {serviceStatus.Id}");
+                    if (serviceStatus.HasUnk3)
+                        Log.Debug($"User unk3 is {serviceStatus.Unk3}");
+                    Log.Debug($"User app version is 0x{serviceStatus.AppVersion:X2}");
 
                     var serviceStatusResponse = new GetServiceStatusResponse();
                     //serviceStatusResponse.Id = serviceStatus.Id;
-                    serviceStatusResponse.PlayerId = serviceStatus.PlayerId;
-                    //serviceStatusResponse.Unknown1 = 0;
-                    //serviceStatusResponse.AppVersion = serviceStatus.AppVersion;
+                    serviceStatusResponse.PlayerId = string.Empty;
+                    //serviceStatusResponse.Unk3 = 0;
+                    serviceStatusResponse.AppVersion = 0x01000002; //_56440000;
 
                     SendQueue.Enqueue(Client.SendAsync(serviceStatusResponse, SVFWMessageType.Reply, message.Header.MessageIndex));
 

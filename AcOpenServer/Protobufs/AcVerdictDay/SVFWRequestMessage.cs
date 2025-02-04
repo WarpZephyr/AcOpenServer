@@ -26,23 +26,24 @@ namespace SVFWRequestMessage {
           string.Concat(
             "ChhTVkZXUmVxdWVzdE1lc3NhZ2UucHJvdG8SElNWRldSZXF1ZXN0TWVzc2Fn",
             "ZSJRChtSZXF1ZXN0UXVlcnlMb2dpblNlcnZlckluZm8SEQoJcGxheWVyX2lk",
-            "GAEgAigJEgoKAmYyGAIgASgJEhMKC2FwcF92ZXJzaW9uGAMgAigEIjMKI1Jl",
+            "GAEgAigJEgoKAmYyGAIgASgJEhMKC2FwcF92ZXJzaW9uGAMgAigEIk8KI1Jl",
             "cXVlc3RRdWVyeUxvZ2luU2VydmVySW5mb1Jlc3BvbnNlEgwKBHBvcnQYASAC",
-            "KAMiJwoQUmVxdWVzdEhhbmRzaGFrZRITCgthZXNfY3djX2tleRgBIAIoDCIa",
-            "ChhSZXF1ZXN0SGFuZHNoYWtlUmVzcG9uc2UiWQoQR2V0U2VydmljZVN0YXR1",
-            "cxIKCgJpZBgBIAIoAxIRCglwbGF5ZXJfaWQYAiACKAkSEQoJdW5rbm93bl8x",
-            "GAMgASgJEhMKC2FwcF92ZXJzaW9uGAQgAigDImEKGEdldFNlcnZpY2VTdGF0",
-            "dXNSZXNwb25zZRIKCgJpZBgBIAEoAxIRCglwbGF5ZXJfaWQYAiABKAkSEQoJ",
-            "dW5rbm93bl8xGAMgASgDEhMKC2FwcF92ZXJzaW9uGAQgASgDQgJIAw=="));
+            "KA0SDAoEdW5rMhgCIAEoDRIMCgR1bmszGAMgASgNIicKEFJlcXVlc3RIYW5k",
+            "c2hha2USEwoLYWVzX2N3Y19rZXkYASACKAwiGgoYUmVxdWVzdEhhbmRzaGFr",
+            "ZVJlc3BvbnNlIlQKEEdldFNlcnZpY2VTdGF0dXMSCgoCaWQYASACKA0SEQoJ",
+            "cGxheWVyX2lkGAIgAigJEgwKBHVuazMYAyABKAkSEwoLYXBwX3ZlcnNpb24Y",
+            "BCACKAQiXAoYR2V0U2VydmljZVN0YXR1c1Jlc3BvbnNlEgoKAmlkGAEgASgN",
+            "EhEKCXBsYXllcl9pZBgCIAEoCRIMCgR1bmszGAMgASgFEhMKC2FwcF92ZXJz",
+            "aW9uGAQgASgFQgJIAw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestQueryLoginServerInfo), global::SVFWRequestMessage.RequestQueryLoginServerInfo.Parser, new[]{ "PlayerId", "F2", "AppVersion" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestQueryLoginServerInfoResponse), global::SVFWRequestMessage.RequestQueryLoginServerInfoResponse.Parser, new[]{ "Port" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestQueryLoginServerInfoResponse), global::SVFWRequestMessage.RequestQueryLoginServerInfoResponse.Parser, new[]{ "Port", "Unk2", "Unk3" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestHandshake), global::SVFWRequestMessage.RequestHandshake.Parser, new[]{ "AesCwcKey" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestHandshakeResponse), global::SVFWRequestMessage.RequestHandshakeResponse.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatus), global::SVFWRequestMessage.GetServiceStatus.Parser, new[]{ "Id", "PlayerId", "Unknown1", "AppVersion" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatusResponse), global::SVFWRequestMessage.GetServiceStatusResponse.Parser, new[]{ "Id", "PlayerId", "Unknown1", "AppVersion" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatus), global::SVFWRequestMessage.GetServiceStatus.Parser, new[]{ "Id", "PlayerId", "Unk3", "AppVersion" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatusResponse), global::SVFWRequestMessage.GetServiceStatusResponse.Parser, new[]{ "Id", "PlayerId", "Unk3", "AppVersion" }, null, null, null, null)
           }));
     }
     #endregion
@@ -411,6 +412,8 @@ namespace SVFWRequestMessage {
     public RequestQueryLoginServerInfoResponse(RequestQueryLoginServerInfoResponse other) : this() {
       _hasBits0 = other._hasBits0;
       port_ = other.port_;
+      unk2_ = other.unk2_;
+      unk3_ = other.unk3_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -422,12 +425,12 @@ namespace SVFWRequestMessage {
 
     /// <summary>Field number for the "port" field.</summary>
     public const int PortFieldNumber = 1;
-    private readonly static long PortDefaultValue = 0L;
+    private readonly static uint PortDefaultValue = 0;
 
-    private long port_;
+    private uint port_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public long Port {
+    public uint Port {
       get { if ((_hasBits0 & 1) != 0) { return port_; } else { return PortDefaultValue; } }
       set {
         _hasBits0 |= 1;
@@ -447,6 +450,63 @@ namespace SVFWRequestMessage {
       _hasBits0 &= ~1;
     }
 
+    /// <summary>Field number for the "unk2" field.</summary>
+    public const int Unk2FieldNumber = 2;
+    private readonly static uint Unk2DefaultValue = 0;
+
+    private uint unk2_;
+    /// <summary>
+    /// IP address?
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Unk2 {
+      get { if ((_hasBits0 & 2) != 0) { return unk2_; } else { return Unk2DefaultValue; } }
+      set {
+        _hasBits0 |= 2;
+        unk2_ = value;
+      }
+    }
+    /// <summary>Gets whether the "unk2" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasUnk2 {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "unk2" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearUnk2() {
+      _hasBits0 &= ~2;
+    }
+
+    /// <summary>Field number for the "unk3" field.</summary>
+    public const int Unk3FieldNumber = 3;
+    private readonly static uint Unk3DefaultValue = 0;
+
+    private uint unk3_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Unk3 {
+      get { if ((_hasBits0 & 4) != 0) { return unk3_; } else { return Unk3DefaultValue; } }
+      set {
+        _hasBits0 |= 4;
+        unk3_ = value;
+      }
+    }
+    /// <summary>Gets whether the "unk3" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasUnk3 {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "unk3" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearUnk3() {
+      _hasBits0 &= ~4;
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -463,6 +523,8 @@ namespace SVFWRequestMessage {
         return true;
       }
       if (Port != other.Port) return false;
+      if (Unk2 != other.Unk2) return false;
+      if (Unk3 != other.Unk3) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -471,6 +533,8 @@ namespace SVFWRequestMessage {
     public override int GetHashCode() {
       int hash = 1;
       if (HasPort) hash ^= Port.GetHashCode();
+      if (HasUnk2) hash ^= Unk2.GetHashCode();
+      if (HasUnk3) hash ^= Unk3.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -491,7 +555,15 @@ namespace SVFWRequestMessage {
     #else
       if (HasPort) {
         output.WriteRawTag(8);
-        output.WriteInt64(Port);
+        output.WriteUInt32(Port);
+      }
+      if (HasUnk2) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Unk2);
+      }
+      if (HasUnk3) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Unk3);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -505,7 +577,15 @@ namespace SVFWRequestMessage {
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasPort) {
         output.WriteRawTag(8);
-        output.WriteInt64(Port);
+        output.WriteUInt32(Port);
+      }
+      if (HasUnk2) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Unk2);
+      }
+      if (HasUnk3) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Unk3);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -518,7 +598,13 @@ namespace SVFWRequestMessage {
     public int CalculateSize() {
       int size = 0;
       if (HasPort) {
-        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Port);
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Port);
+      }
+      if (HasUnk2) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Unk2);
+      }
+      if (HasUnk3) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Unk3);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -534,6 +620,12 @@ namespace SVFWRequestMessage {
       }
       if (other.HasPort) {
         Port = other.Port;
+      }
+      if (other.HasUnk2) {
+        Unk2 = other.Unk2;
+      }
+      if (other.HasUnk3) {
+        Unk3 = other.Unk3;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -555,7 +647,15 @@ namespace SVFWRequestMessage {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Port = input.ReadInt64();
+            Port = input.ReadUInt32();
+            break;
+          }
+          case 16: {
+            Unk2 = input.ReadUInt32();
+            break;
+          }
+          case 24: {
+            Unk3 = input.ReadUInt32();
             break;
           }
         }
@@ -578,7 +678,15 @@ namespace SVFWRequestMessage {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
-            Port = input.ReadInt64();
+            Port = input.ReadUInt32();
+            break;
+          }
+          case 16: {
+            Unk2 = input.ReadUInt32();
+            break;
+          }
+          case 24: {
+            Unk3 = input.ReadUInt32();
             break;
           }
         }
@@ -1011,7 +1119,7 @@ namespace SVFWRequestMessage {
       _hasBits0 = other._hasBits0;
       id_ = other.id_;
       playerId_ = other.playerId_;
-      unknown1_ = other.unknown1_;
+      unk3_ = other.unk3_;
       appVersion_ = other.appVersion_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1024,12 +1132,12 @@ namespace SVFWRequestMessage {
 
     /// <summary>Field number for the "id" field.</summary>
     public const int IdFieldNumber = 1;
-    private readonly static long IdDefaultValue = 0L;
+    private readonly static uint IdDefaultValue = 0;
 
-    private long id_;
+    private uint id_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public long Id {
+    public uint Id {
       get { if ((_hasBits0 & 1) != 0) { return id_; } else { return IdDefaultValue; } }
       set {
         _hasBits0 |= 1;
@@ -1075,40 +1183,40 @@ namespace SVFWRequestMessage {
       playerId_ = null;
     }
 
-    /// <summary>Field number for the "unknown_1" field.</summary>
-    public const int Unknown1FieldNumber = 3;
-    private readonly static string Unknown1DefaultValue = "";
+    /// <summary>Field number for the "unk3" field.</summary>
+    public const int Unk3FieldNumber = 3;
+    private readonly static string Unk3DefaultValue = "";
 
-    private string unknown1_;
+    private string unk3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string Unknown1 {
-      get { return unknown1_ ?? Unknown1DefaultValue; }
+    public string Unk3 {
+      get { return unk3_ ?? Unk3DefaultValue; }
       set {
-        unknown1_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        unk3_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
-    /// <summary>Gets whether the "unknown_1" field is set</summary>
+    /// <summary>Gets whether the "unk3" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasUnknown1 {
-      get { return unknown1_ != null; }
+    public bool HasUnk3 {
+      get { return unk3_ != null; }
     }
-    /// <summary>Clears the value of the "unknown_1" field</summary>
+    /// <summary>Clears the value of the "unk3" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearUnknown1() {
-      unknown1_ = null;
+    public void ClearUnk3() {
+      unk3_ = null;
     }
 
     /// <summary>Field number for the "app_version" field.</summary>
     public const int AppVersionFieldNumber = 4;
-    private readonly static long AppVersionDefaultValue = 0L;
+    private readonly static ulong AppVersionDefaultValue = 0UL;
 
-    private long appVersion_;
+    private ulong appVersion_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public long AppVersion {
+    public ulong AppVersion {
       get { if ((_hasBits0 & 2) != 0) { return appVersion_; } else { return AppVersionDefaultValue; } }
       set {
         _hasBits0 |= 2;
@@ -1145,7 +1253,7 @@ namespace SVFWRequestMessage {
       }
       if (Id != other.Id) return false;
       if (PlayerId != other.PlayerId) return false;
-      if (Unknown1 != other.Unknown1) return false;
+      if (Unk3 != other.Unk3) return false;
       if (AppVersion != other.AppVersion) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1156,7 +1264,7 @@ namespace SVFWRequestMessage {
       int hash = 1;
       if (HasId) hash ^= Id.GetHashCode();
       if (HasPlayerId) hash ^= PlayerId.GetHashCode();
-      if (HasUnknown1) hash ^= Unknown1.GetHashCode();
+      if (HasUnk3) hash ^= Unk3.GetHashCode();
       if (HasAppVersion) hash ^= AppVersion.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1178,19 +1286,19 @@ namespace SVFWRequestMessage {
     #else
       if (HasId) {
         output.WriteRawTag(8);
-        output.WriteInt64(Id);
+        output.WriteUInt32(Id);
       }
       if (HasPlayerId) {
         output.WriteRawTag(18);
         output.WriteString(PlayerId);
       }
-      if (HasUnknown1) {
+      if (HasUnk3) {
         output.WriteRawTag(26);
-        output.WriteString(Unknown1);
+        output.WriteString(Unk3);
       }
       if (HasAppVersion) {
         output.WriteRawTag(32);
-        output.WriteInt64(AppVersion);
+        output.WriteUInt64(AppVersion);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1204,19 +1312,19 @@ namespace SVFWRequestMessage {
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasId) {
         output.WriteRawTag(8);
-        output.WriteInt64(Id);
+        output.WriteUInt32(Id);
       }
       if (HasPlayerId) {
         output.WriteRawTag(18);
         output.WriteString(PlayerId);
       }
-      if (HasUnknown1) {
+      if (HasUnk3) {
         output.WriteRawTag(26);
-        output.WriteString(Unknown1);
+        output.WriteString(Unk3);
       }
       if (HasAppVersion) {
         output.WriteRawTag(32);
-        output.WriteInt64(AppVersion);
+        output.WriteUInt64(AppVersion);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1229,16 +1337,16 @@ namespace SVFWRequestMessage {
     public int CalculateSize() {
       int size = 0;
       if (HasId) {
-        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Id);
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Id);
       }
       if (HasPlayerId) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
       }
-      if (HasUnknown1) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Unknown1);
+      if (HasUnk3) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Unk3);
       }
       if (HasAppVersion) {
-        size += 1 + pb::CodedOutputStream.ComputeInt64Size(AppVersion);
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(AppVersion);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1258,8 +1366,8 @@ namespace SVFWRequestMessage {
       if (other.HasPlayerId) {
         PlayerId = other.PlayerId;
       }
-      if (other.HasUnknown1) {
-        Unknown1 = other.Unknown1;
+      if (other.HasUnk3) {
+        Unk3 = other.Unk3;
       }
       if (other.HasAppVersion) {
         AppVersion = other.AppVersion;
@@ -1284,7 +1392,7 @@ namespace SVFWRequestMessage {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Id = input.ReadInt64();
+            Id = input.ReadUInt32();
             break;
           }
           case 18: {
@@ -1292,11 +1400,11 @@ namespace SVFWRequestMessage {
             break;
           }
           case 26: {
-            Unknown1 = input.ReadString();
+            Unk3 = input.ReadString();
             break;
           }
           case 32: {
-            AppVersion = input.ReadInt64();
+            AppVersion = input.ReadUInt64();
             break;
           }
         }
@@ -1319,7 +1427,7 @@ namespace SVFWRequestMessage {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
-            Id = input.ReadInt64();
+            Id = input.ReadUInt32();
             break;
           }
           case 18: {
@@ -1327,11 +1435,11 @@ namespace SVFWRequestMessage {
             break;
           }
           case 26: {
-            Unknown1 = input.ReadString();
+            Unk3 = input.ReadString();
             break;
           }
           case 32: {
-            AppVersion = input.ReadInt64();
+            AppVersion = input.ReadUInt64();
             break;
           }
         }
@@ -1386,7 +1494,7 @@ namespace SVFWRequestMessage {
       _hasBits0 = other._hasBits0;
       id_ = other.id_;
       playerId_ = other.playerId_;
-      unknown1_ = other.unknown1_;
+      unk3_ = other.unk3_;
       appVersion_ = other.appVersion_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1399,12 +1507,12 @@ namespace SVFWRequestMessage {
 
     /// <summary>Field number for the "id" field.</summary>
     public const int IdFieldNumber = 1;
-    private readonly static long IdDefaultValue = 0L;
+    private readonly static uint IdDefaultValue = 0;
 
-    private long id_;
+    private uint id_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public long Id {
+    public uint Id {
       get { if ((_hasBits0 & 1) != 0) { return id_; } else { return IdDefaultValue; } }
       set {
         _hasBits0 |= 1;
@@ -1450,41 +1558,41 @@ namespace SVFWRequestMessage {
       playerId_ = null;
     }
 
-    /// <summary>Field number for the "unknown_1" field.</summary>
-    public const int Unknown1FieldNumber = 3;
-    private readonly static long Unknown1DefaultValue = 0L;
+    /// <summary>Field number for the "unk3" field.</summary>
+    public const int Unk3FieldNumber = 3;
+    private readonly static int Unk3DefaultValue = 0;
 
-    private long unknown1_;
+    private int unk3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public long Unknown1 {
-      get { if ((_hasBits0 & 2) != 0) { return unknown1_; } else { return Unknown1DefaultValue; } }
+    public int Unk3 {
+      get { if ((_hasBits0 & 2) != 0) { return unk3_; } else { return Unk3DefaultValue; } }
       set {
         _hasBits0 |= 2;
-        unknown1_ = value;
+        unk3_ = value;
       }
     }
-    /// <summary>Gets whether the "unknown_1" field is set</summary>
+    /// <summary>Gets whether the "unk3" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasUnknown1 {
+    public bool HasUnk3 {
       get { return (_hasBits0 & 2) != 0; }
     }
-    /// <summary>Clears the value of the "unknown_1" field</summary>
+    /// <summary>Clears the value of the "unk3" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearUnknown1() {
+    public void ClearUnk3() {
       _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "app_version" field.</summary>
     public const int AppVersionFieldNumber = 4;
-    private readonly static long AppVersionDefaultValue = 0L;
+    private readonly static int AppVersionDefaultValue = 0;
 
-    private long appVersion_;
+    private int appVersion_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public long AppVersion {
+    public int AppVersion {
       get { if ((_hasBits0 & 4) != 0) { return appVersion_; } else { return AppVersionDefaultValue; } }
       set {
         _hasBits0 |= 4;
@@ -1521,7 +1629,7 @@ namespace SVFWRequestMessage {
       }
       if (Id != other.Id) return false;
       if (PlayerId != other.PlayerId) return false;
-      if (Unknown1 != other.Unknown1) return false;
+      if (Unk3 != other.Unk3) return false;
       if (AppVersion != other.AppVersion) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1532,7 +1640,7 @@ namespace SVFWRequestMessage {
       int hash = 1;
       if (HasId) hash ^= Id.GetHashCode();
       if (HasPlayerId) hash ^= PlayerId.GetHashCode();
-      if (HasUnknown1) hash ^= Unknown1.GetHashCode();
+      if (HasUnk3) hash ^= Unk3.GetHashCode();
       if (HasAppVersion) hash ^= AppVersion.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1554,19 +1662,19 @@ namespace SVFWRequestMessage {
     #else
       if (HasId) {
         output.WriteRawTag(8);
-        output.WriteInt64(Id);
+        output.WriteUInt32(Id);
       }
       if (HasPlayerId) {
         output.WriteRawTag(18);
         output.WriteString(PlayerId);
       }
-      if (HasUnknown1) {
+      if (HasUnk3) {
         output.WriteRawTag(24);
-        output.WriteInt64(Unknown1);
+        output.WriteInt32(Unk3);
       }
       if (HasAppVersion) {
         output.WriteRawTag(32);
-        output.WriteInt64(AppVersion);
+        output.WriteInt32(AppVersion);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1580,19 +1688,19 @@ namespace SVFWRequestMessage {
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasId) {
         output.WriteRawTag(8);
-        output.WriteInt64(Id);
+        output.WriteUInt32(Id);
       }
       if (HasPlayerId) {
         output.WriteRawTag(18);
         output.WriteString(PlayerId);
       }
-      if (HasUnknown1) {
+      if (HasUnk3) {
         output.WriteRawTag(24);
-        output.WriteInt64(Unknown1);
+        output.WriteInt32(Unk3);
       }
       if (HasAppVersion) {
         output.WriteRawTag(32);
-        output.WriteInt64(AppVersion);
+        output.WriteInt32(AppVersion);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1605,16 +1713,16 @@ namespace SVFWRequestMessage {
     public int CalculateSize() {
       int size = 0;
       if (HasId) {
-        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Id);
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Id);
       }
       if (HasPlayerId) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
       }
-      if (HasUnknown1) {
-        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Unknown1);
+      if (HasUnk3) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Unk3);
       }
       if (HasAppVersion) {
-        size += 1 + pb::CodedOutputStream.ComputeInt64Size(AppVersion);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(AppVersion);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1634,8 +1742,8 @@ namespace SVFWRequestMessage {
       if (other.HasPlayerId) {
         PlayerId = other.PlayerId;
       }
-      if (other.HasUnknown1) {
-        Unknown1 = other.Unknown1;
+      if (other.HasUnk3) {
+        Unk3 = other.Unk3;
       }
       if (other.HasAppVersion) {
         AppVersion = other.AppVersion;
@@ -1660,7 +1768,7 @@ namespace SVFWRequestMessage {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Id = input.ReadInt64();
+            Id = input.ReadUInt32();
             break;
           }
           case 18: {
@@ -1668,11 +1776,11 @@ namespace SVFWRequestMessage {
             break;
           }
           case 24: {
-            Unknown1 = input.ReadInt64();
+            Unk3 = input.ReadInt32();
             break;
           }
           case 32: {
-            AppVersion = input.ReadInt64();
+            AppVersion = input.ReadInt32();
             break;
           }
         }
@@ -1695,7 +1803,7 @@ namespace SVFWRequestMessage {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
-            Id = input.ReadInt64();
+            Id = input.ReadUInt32();
             break;
           }
           case 18: {
@@ -1703,11 +1811,11 @@ namespace SVFWRequestMessage {
             break;
           }
           case 24: {
-            Unknown1 = input.ReadInt64();
+            Unk3 = input.ReadInt32();
             break;
           }
           case 32: {
-            AppVersion = input.ReadInt64();
+            AppVersion = input.ReadInt32();
             break;
           }
         }
