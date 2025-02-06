@@ -91,9 +91,10 @@ namespace AcOpenServer.Network.Clients
                     AuthState = AuthClientState.Complete;
                     break;
                 case AuthClientState.Complete:
-                    Log.Debug(message.Header.MessageType.ToString());
                     Log.Debug(message.Payload.ToHexView(0x10));
                     break;
+                default:
+                    throw new InvalidOperationException($"Unknown authentication step: {AuthState}");
             }
         }
 
