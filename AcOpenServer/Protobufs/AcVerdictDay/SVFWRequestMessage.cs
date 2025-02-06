@@ -33,7 +33,7 @@ namespace SVFWRequestMessage {
             "ZVJlc3BvbnNlIlQKEEdldFNlcnZpY2VTdGF0dXMSCgoCaWQYASACKA0SEQoJ",
             "cGxheWVyX2lkGAIgAigJEgwKBHVuazMYAyABKAkSEwoLYXBwX3ZlcnNpb24Y",
             "BCACKAQiXAoYR2V0U2VydmljZVN0YXR1c1Jlc3BvbnNlEgoKAmlkGAEgASgN",
-            "EhEKCXBsYXllcl9pZBgCIAEoCRIMCgR1bmszGAMgASgFEhMKC2FwcF92ZXJz",
+            "EhEKCXBsYXllcl9pZBgCIAEoCRIMCgR1bmszGAMgASgIEhMKC2FwcF92ZXJz",
             "aW9uGAQgASgFQgJIAw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
@@ -1560,12 +1560,12 @@ namespace SVFWRequestMessage {
 
     /// <summary>Field number for the "unk3" field.</summary>
     public const int Unk3FieldNumber = 3;
-    private readonly static int Unk3DefaultValue = 0;
+    private readonly static bool Unk3DefaultValue = false;
 
-    private int unk3_;
+    private bool unk3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int Unk3 {
+    public bool Unk3 {
       get { if ((_hasBits0 & 2) != 0) { return unk3_; } else { return Unk3DefaultValue; } }
       set {
         _hasBits0 |= 2;
@@ -1670,7 +1670,7 @@ namespace SVFWRequestMessage {
       }
       if (HasUnk3) {
         output.WriteRawTag(24);
-        output.WriteInt32(Unk3);
+        output.WriteBool(Unk3);
       }
       if (HasAppVersion) {
         output.WriteRawTag(32);
@@ -1696,7 +1696,7 @@ namespace SVFWRequestMessage {
       }
       if (HasUnk3) {
         output.WriteRawTag(24);
-        output.WriteInt32(Unk3);
+        output.WriteBool(Unk3);
       }
       if (HasAppVersion) {
         output.WriteRawTag(32);
@@ -1719,7 +1719,7 @@ namespace SVFWRequestMessage {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
       }
       if (HasUnk3) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Unk3);
+        size += 1 + 1;
       }
       if (HasAppVersion) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(AppVersion);
@@ -1776,7 +1776,7 @@ namespace SVFWRequestMessage {
             break;
           }
           case 24: {
-            Unk3 = input.ReadInt32();
+            Unk3 = input.ReadBool();
             break;
           }
           case 32: {
@@ -1811,7 +1811,7 @@ namespace SVFWRequestMessage {
             break;
           }
           case 24: {
-            Unk3 = input.ReadInt32();
+            Unk3 = input.ReadBool();
             break;
           }
           case 32: {

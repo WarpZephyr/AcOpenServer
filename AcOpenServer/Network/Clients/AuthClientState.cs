@@ -16,6 +16,11 @@
         WaitingForServiceStatusRequest,
 
         /// <summary>
+        /// The server is waiting on a key material response from the client.
+        /// </summary>
+        WaitingForKeyMaterial,
+
+        /// <summary>
         /// Client authentication is complete.
         /// </summary>
         Complete

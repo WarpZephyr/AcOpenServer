@@ -47,7 +47,6 @@ namespace AcOpenServer.Core.Crypto
 
         public byte[] Encrypt(byte[] input)
         {
-            Console.WriteLine($"Original: {input.ToHexView(0x10)}");
             var cwc = Key.GetCWC();
 
             byte[] iv = new byte[IVLength];
@@ -70,10 +69,6 @@ namespace AcOpenServer.Core.Crypto
             Array.Copy(iv, 0, output, ivOffset, iv.Length);
             Array.Copy(tag, 0, output, tagOffset, tag.Length);
             Array.Copy(message, 0, output, messageOffset, message.Length);
-
-            
-            Console.WriteLine($"Encrypted: {output.ToHexView(0x10)}");
-            Console.WriteLine($"Decrypted: {Decrypt(output).ToHexView(0x10)}");
             return output;
         }
 

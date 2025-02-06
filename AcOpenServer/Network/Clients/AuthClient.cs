@@ -17,6 +17,7 @@ namespace AcOpenServer.Network.Clients
         private readonly SVFWMessageClient Client;
         private readonly Queue<Task> SendQueue;
         private AuthClientState AuthState;
+        private CWCKey? GameCwcKey;
         private bool disposedValue;
 
         public string Name => Client.Name;
@@ -61,20 +62,32 @@ namespace AcOpenServer.Network.Clients
                     var serviceStatus = Parse<GetServiceStatus>(message);
 
                     Log.Info($"User {serviceStatus.PlayerId} is trying to authenticate.");
-                    Log.Debug($"User id is {serviceStatus.Id}");
-                    if (serviceStatus.HasUnk3)
-                        Log.Debug($"User unk3 is {serviceStatus.Unk3}");
-                    Log.Debug($"User app version is 0x{serviceStatus.AppVersion:X2}");
-
-                    var serviceStatusResponse = new GetServiceStatusResponse();
-                    //serviceStatusResponse.Id = serviceStatus.Id;
-                    serviceStatusResponse.PlayerId = string.Empty;
-                    //serviceStatusResponse.Unk3 = 0;
-                    serviceStatusResponse.AppVersion = 0x01000002; //_56440000;
+                    var serviceStatusResponse = new GetServiceStatusResponse
+                    {
+                        Id = 2,
+                        PlayerId = "",
+                        Unk3 = false,
+                        AppVersion = (int)serviceStatus.AppVersion
+                    };
 
                     SendQueue.Enqueue(Client.SendAsync(serviceStatusResponse, SVFWMessageType.Reply, message.Header.MessageIndex));
+                    AuthState = AuthClientState.WaitingForKeyMaterial;
+                    break;
+                case AuthClientState.WaitingForKeyMaterial:
+                    ValidateState(message.Header.MessageType, SVFWMessageType.KeyMaterial);
+                    var responseKey = new byte[16];
+                    rand = new Random();
+                    rand.NextBytes(responseKey);
 
-                    Log.Debug($"Sent {nameof(GetServiceStatusResponse)} to client {Name}");
+                    // Client sends 16 bytes
+                    // First 8 are app_version again
+                    // Second 8 is the key part we need
+                    // Client fills first 8 bytes of our key
+                    Array.Copy(message.Payload, 8, responseKey, 0, 8);
+                    GameCwcKey = new CWCKey(responseKey);
+
+                    var responseKeyMessage = new SVFWMessage(responseKey);
+                    SendQueue.Enqueue(Client.SendAsync(responseKeyMessage, SVFWMessageType.Reply, message.Header.MessageIndex));
                     AuthState = AuthClientState.Complete;
                     break;
                 case AuthClientState.Complete:
@@ -85,6 +98,14 @@ namespace AcOpenServer.Network.Clients
         }
 
         #region Helpers
+
+        private void ValidateState(SVFWMessageType type, SVFWMessageType expectedType)
+        {
+            if (type != expectedType)
+            {
+                throw new AuthException($"Disconnecting client {Name} due to an invalid message: {type}");
+            }
+        }
 
         private void ValidateState<T>(SVFWMessageType type, SVFWMessageType expectedType)
         {

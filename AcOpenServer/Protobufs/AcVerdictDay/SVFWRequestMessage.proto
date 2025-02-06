@@ -54,6 +54,6 @@ message GetServiceStatus {
 message GetServiceStatusResponse {
     optional uint32 id = 1;
     optional string player_id = 2;
-    optional int32 unk3 = 3;
+    optional bool unk3 = 3;
     optional int32 app_version = 4;
 }
