@@ -21,6 +21,11 @@
         WaitingForKeyMaterial,
 
         /// <summary>
+        /// The server is waiting on a ticket from the client.
+        /// </summary>
+        WaitingForTicket,
+
+        /// <summary>
         /// Client authentication is complete.
         /// </summary>
         Complete

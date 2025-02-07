@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf;
 
-namespace AcOpenServer.Core.Utilities
+namespace AcOpenServer.Utilities
 {
     internal static class ProtobufHelper
     {

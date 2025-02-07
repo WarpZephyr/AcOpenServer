@@ -1,5 +1,6 @@
-﻿using AcOpenServer.Core.Buffers;
-using AcOpenServer.Core.Crypto;
+﻿using AcOpenServer.Binary;
+using AcOpenServer.Crypto;
+using AcOpenServer.Network.Data.AC;
 using AcOpenServer.Network.Exceptions;
 using Google.Protobuf;
 using System;
@@ -121,7 +122,7 @@ namespace AcOpenServer.Network.Streams
                 throw new SVFWMessageException($"Message is too small to have a header; Size: {buffer.Length}; Minimum Expected: {MessageHeaderSize}");
             }
 
-            var header = BufferReadHelper.Read<SVFWMessageHeader>(buffer, 0);
+            var header = BinaryBufferReader.Read<SVFWMessageHeader>(buffer, 0);
             header.SwapEndian();
 
             int payloadOffset = MessageHeaderSize;
@@ -134,7 +135,7 @@ namespace AcOpenServer.Network.Streams
                     throw new SVFWMessageException($"Message is a reply, but is too small to have a response header; Size: {buffer.Length}; Minimum Expected: {payloadOffset}");
                 }
 
-                responseHeader = BufferReadHelper.Read<SVFWMessageResponseHeader>(buffer, MessageHeaderSize);
+                responseHeader = BinaryBufferReader.Read<SVFWMessageResponseHeader>(buffer, MessageHeaderSize);
                 responseHeader.Value.SwapEndian();
             }
             else
@@ -158,7 +159,7 @@ namespace AcOpenServer.Network.Streams
             byte[] buffer = new byte[messageSize];
             var header = message.Header;
             header.SwapEndian();
-            BufferWriteHelper.Write(header, buffer, 0);
+            BinaryBufferWriter.Write(buffer, 0, header);
 
             int payloadOffset = MessageHeaderSize;
             if (isReply)
@@ -168,7 +169,7 @@ namespace AcOpenServer.Network.Streams
                 Debug.Assert(nullableResponseHeader != null);
                 var responseHeader = nullableResponseHeader.Value;
                 responseHeader.SwapEndian();
-                BufferWriteHelper.Write(responseHeader, buffer, MessageHeaderSize);
+                BinaryBufferWriter.Write(buffer, MessageHeaderSize, responseHeader);
             }
 
             Array.Copy(message.Payload, 0, buffer, payloadOffset, message.Payload.Length);

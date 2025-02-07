@@ -1,5 +1,5 @@
-﻿using AcOpenServer.Core.Crypto;
-using AcOpenServer.Core.Logging;
+﻿using AcOpenServer.Crypto;
+using AcOpenServer.Logging;
 using AcOpenServer.Network.Servers;
 using System.Collections.Generic;
 using System.IO;

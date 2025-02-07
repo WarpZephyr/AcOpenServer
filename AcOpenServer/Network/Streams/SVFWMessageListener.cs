@@ -1,5 +1,4 @@
-﻿using AcOpenServer.Core.Crypto;
-using AcOpenServer.Core.Network;
+﻿using AcOpenServer.Crypto;
 using System;
 using System.Threading.Tasks;
 

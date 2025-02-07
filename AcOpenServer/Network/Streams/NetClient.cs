@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Core.Network
+namespace AcOpenServer.Network.Streams
 {
     public class NetClient : IDisposable
     {

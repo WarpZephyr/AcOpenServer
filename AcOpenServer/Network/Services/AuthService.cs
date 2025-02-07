@@ -1,4 +1,4 @@
-﻿using AcOpenServer.Core.Logging;
+﻿using AcOpenServer.Logging;
 using AcOpenServer.Network.Clients;
 using AcOpenServer.Network.Streams;
 using System;

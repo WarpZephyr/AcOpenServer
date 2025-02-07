@@ -1,4 +1,4 @@
-﻿using AcOpenServer.Core.Crypto;
+﻿using AcOpenServer.Crypto;
 using OpenSSL.Crypto;
 
 namespace AcOpenServer.Tests

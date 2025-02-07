@@ -1,4 +1,4 @@
-﻿namespace AcOpenServer.Network.Streams
+﻿namespace AcOpenServer.Network.Data.AC
 {
     public class SVFWMessage
     {

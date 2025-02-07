@@ -1,7 +1,7 @@
-﻿using AcOpenServer.Core.Logging;
-using AcOpenServer.Core.Utilities;
+﻿using AcOpenServer.Logging;
 using AcOpenServer.Network;
 using AcOpenServer.Tests;
+using AcOpenServer.Utilities;
 using System;
 using System.IO;
 using System.Net;

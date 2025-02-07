@@ -1,12 +1,15 @@
-﻿using AcOpenServer.Core.Crypto;
-using AcOpenServer.Core.Logging;
-using AcOpenServer.Core.Utilities;
+﻿using AcOpenServer.Crypto;
+using AcOpenServer.Logging;
+using AcOpenServer.Network.Data.AC;
+using AcOpenServer.Network.Data.RPCN;
 using AcOpenServer.Network.Exceptions;
 using AcOpenServer.Network.Streams;
+using AcOpenServer.Utilities;
 using Google.Protobuf;
 using SVFWRequestMessage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Clients
@@ -17,6 +20,8 @@ namespace AcOpenServer.Network.Clients
         private readonly SVFWMessageClient Client;
         private readonly Queue<Task> SendQueue;
         private AuthClientState AuthState;
+        private string UserName;
+        private byte[] GameCwcKeyBytes;
         private CWCKey? GameCwcKey;
         private bool disposedValue;
 
@@ -29,6 +34,8 @@ namespace AcOpenServer.Network.Clients
             Client = client;
             AuthState = AuthClientState.WaitingForHandshakeRequest;
             SendQueue = [];
+            UserName = string.Empty;
+            GameCwcKeyBytes = new byte[16];
         }
 
         private void Service(SVFWMessage message)
@@ -39,7 +46,8 @@ namespace AcOpenServer.Network.Clients
                     ValidateState<RequestHandshake>(message.Header.MessageType, SVFWMessageType.RequestHandshake);
                     var handshake = Parse<RequestHandshake>(message);
 
-                    var cwcCipher = new CWCCipher(new CWCKey(handshake.AesCwcKey.Memory.ToArray()));
+                    var aesCwcKey = handshake.AesCwcKey.Memory.ToArray();
+                    var cwcCipher = new CWCCipher(new CWCKey(aesCwcKey));
                     Client.SetCipher(cwcCipher, cwcCipher);
 
                     Client.CipherEnabled = false;
@@ -52,16 +60,15 @@ namespace AcOpenServer.Network.Clients
 
                     var handshakeResponseMessage = new SVFWMessage(responseBuffer);
                     SendQueue.Enqueue(Client.SendAsync(handshakeResponseMessage, SVFWMessageType.Reply, message.Header.MessageIndex));
-
-                    Log.Debug($"Sent {nameof(RequestHandshakeResponse)} to client {Name}");
                     Client.CipherEnabled = true;
                     AuthState = AuthClientState.WaitingForServiceStatusRequest;
                     break;
                 case AuthClientState.WaitingForServiceStatusRequest:
                     ValidateState<GetServiceStatus>(message.Header.MessageType, SVFWMessageType.GetServiceStatus);
                     var serviceStatus = Parse<GetServiceStatus>(message);
+                    UserName = serviceStatus.PlayerId;
 
-                    Log.Info($"User {serviceStatus.PlayerId} is trying to authenticate.");
+                    Log.Info($"User {UserName} is trying to authenticate.");
                     var serviceStatusResponse = new GetServiceStatusResponse
                     {
                         Id = 2,
@@ -75,26 +82,53 @@ namespace AcOpenServer.Network.Clients
                     break;
                 case AuthClientState.WaitingForKeyMaterial:
                     ValidateState(message.Header.MessageType, SVFWMessageType.KeyMaterial);
-                    var responseKey = new byte[16];
+                    byte[] cwcKeyBytes = new byte[16];
                     rand = new Random();
-                    rand.NextBytes(responseKey);
+                    rand.NextBytes(cwcKeyBytes);
 
                     // Client sends 16 bytes
                     // First 8 are app_version again
                     // Second 8 is the key part we need
                     // Client fills first 8 bytes of our key
-                    Array.Copy(message.Payload, 8, responseKey, 0, 8);
-                    GameCwcKey = new CWCKey(responseKey);
+                    Array.Copy(message.Payload, 8, cwcKeyBytes, 0, 8);
 
-                    var responseKeyMessage = new SVFWMessage(responseKey);
+                    // Store our key so we can validate it later
+                    // The native libraries encrypt the old buffer so copy it before we send it
+                    Array.Copy(cwcKeyBytes, GameCwcKeyBytes, cwcKeyBytes.Length);
+
+                    GameCwcKey = new CWCKey(cwcKeyBytes);
+                    var responseKeyMessage = new SVFWMessage(cwcKeyBytes);
                     SendQueue.Enqueue(Client.SendAsync(responseKeyMessage, SVFWMessageType.Reply, message.Header.MessageIndex));
+
+                    AuthState = AuthClientState.WaitingForTicket;
+                    break;
+                case AuthClientState.WaitingForTicket:
+                    var ticket = new Ticket(message.Payload);
+
+                    // Validate the ticket hasn't expired
+                    if (ticket.IsExpired)
+                        throw new AuthException($"User {UserName} sent a ticket that expired on: {ticket.ExpireDate}");
+
+                    // Warn when ticket isn't signed
+                    if (!ticket.IsSigned)
+                        Log.Warning($"User {UserName} sent a ticket that isn't signed.");
+
+                    // Validate we are both using the same key
+                    var ticketCwcKey = ticket.Cookie[..16];
+                    if (!GameCwcKeyBytes.SequenceEqual(ticketCwcKey))
+                        throw new AuthException($"User {UserName} returned AES-CWC-128 key that does not match expected key.");
+
+                    // Clear the byte array for security
+                    for (int i = 0; i < GameCwcKeyBytes.Length; i++)
+                        GameCwcKeyBytes[i] = 0;
+
+                    Log.Info($"User {UserName} authenticated successfully.");
                     AuthState = AuthClientState.Complete;
                     break;
                 case AuthClientState.Complete:
-                    Log.Debug(message.Payload.ToHexView(0x10));
-                    break;
+                    throw new AuthException($"User {UserName} sent more data to the auth server, but has already completed authentication.");
                 default:
-                    throw new InvalidOperationException($"Unknown authentication step: {AuthState}");
+                    throw new AuthException($"Unknown authentication step: {AuthState}");
             }
         }
 
@@ -118,9 +152,6 @@ namespace AcOpenServer.Network.Clients
 
         private T Parse<T>(SVFWMessage message) where T : IMessage, new()
         {
-            string typeName = typeof(T).Name;
-            Log.Info($"Client {Name} has sent {typeName}.");
-
             try
             {
                 T result = ProtobufHelper.ParseFrom<T>(message.Payload);
@@ -128,7 +159,7 @@ namespace AcOpenServer.Network.Clients
             }
             catch (Exception ex)
             {
-                throw new AuthException($"Disconnecting client {Name} due to a {typeName} parsing failure.", ex);
+                throw new AuthException($"Disconnecting client {Name} due to a {typeof(T).Name} parsing failure.", ex);
             }
         }
 

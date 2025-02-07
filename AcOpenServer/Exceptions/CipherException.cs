@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AcOpenServer.Core.Exceptions
+namespace AcOpenServer.Exceptions
 {
     public class CipherException : Exception
     {

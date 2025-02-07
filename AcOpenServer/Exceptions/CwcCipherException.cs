@@ -1,4 +1,4 @@
-﻿namespace AcOpenServer.Core.Exceptions
+﻿namespace AcOpenServer.Exceptions
 {
     public class CwcCipherException : CipherException
     {

@@ -1,8 +1,7 @@
-﻿using AcOpenServer.Core.Exceptions;
-using AcOpenServer.Core.Utilities;
+﻿using AcOpenServer.Exceptions;
 using System;
 
-namespace AcOpenServer.Core.Crypto
+namespace AcOpenServer.Crypto
 {
     public class CWCCipher : ICipher
     {

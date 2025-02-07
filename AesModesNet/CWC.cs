@@ -6,12 +6,12 @@ namespace AesModesNet
 {
     public class CWC : IDisposable
     {
-        private unsafe void* CwcContext;
+        private readonly unsafe void* CwcContext;
         private bool disposedValue;
 
         public unsafe CWC(byte[] key)
         {
-            CwcContext = NativeMemory.AlignedAlloc((nuint)sizeof(cwc_ctx), (nuint)16);
+            CwcContext = NativeMemory.AlignedAlloc((nuint)sizeof(cwc_ctx), 16);
             ThrowIfNotGood(cwc_init_and_key(key, (uint)key.Length, CwcContext));
         }
 
@@ -31,11 +31,6 @@ namespace AesModesNet
         {
             if (!disposedValue)
             {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                }
-
                 ThrowIfNotGood(cwc_end(CwcContext));
                 NativeMemory.AlignedFree(CwcContext);
 

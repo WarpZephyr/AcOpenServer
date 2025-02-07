@@ -1,5 +1,5 @@
-﻿using AcOpenServer.Core.Buffers;
-using AcOpenServer.Core.Network;
+﻿using AcOpenServer.Binary;
+using AcOpenServer.Network.Data.AC;
 using AcOpenServer.Network.Exceptions;
 using System;
 using System.Buffers.Binary;
@@ -48,7 +48,7 @@ namespace AcOpenServer.Network.Streams
             byte[] buffer = new byte[sizeof(ushort) + packetSize];
 
             ushort packetLengthPrefix = BinaryPrimitives.ReverseEndianness((ushort)packetSize);
-            BufferWriteHelper.Write(packetLengthPrefix, buffer, 0);
+            BinaryBufferWriter.Write(buffer, 0, packetLengthPrefix);
 
             Write(packet, buffer, sizeof(ushort));
             return Client.SendAsync(buffer);
@@ -68,7 +68,7 @@ namespace AcOpenServer.Network.Streams
                     throw new SVFWPacketException($"Packet prefix length too small; Received: {received}; Minimum Expected: {ExpectingCount}");
                 }
 
-                ushort packetLength = BinaryPrimitives.ReverseEndianness(BufferReadHelper.Read<ushort>(Client.Buffer));
+                ushort packetLength = BinaryBufferReader.ReadUInt16BigEndian(Client.Buffer);
                 if (packetLength < PacketHeaderSize)
                 {
                     throw new SVFWPacketException($"Packet is too small to contain a header; Length: {packetLength}; Minimum Expected: {PacketHeaderSize}");
@@ -99,7 +99,7 @@ namespace AcOpenServer.Network.Streams
 
         private static SVFWPacket Read(byte[] buffer)
         {
-            var header = BufferReadHelper.Read<SVFWPacketHeader>(buffer);
+            var header = BinaryBufferReader.Read<SVFWPacketHeader>(buffer);
             header.SwapEndian();
 
             var payload = buffer.Length == PacketHeaderSize ? [] : buffer[PacketHeaderSize..];
@@ -116,7 +116,7 @@ namespace AcOpenServer.Network.Streams
             var header = packet.Header;
             header.SwapEndian();
 
-            BufferWriteHelper.Write(header, buffer, offset);
+            BinaryBufferWriter.Write(buffer, offset, header);
             Array.Copy(packet.Payload, 0, buffer, offset + PacketHeaderSize, packet.Payload.Length);
         }
 

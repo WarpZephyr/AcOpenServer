@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AcOpenServer.Core.Crypto
+namespace AcOpenServer.Crypto
 {
     public interface ICipher : IDisposable
     {

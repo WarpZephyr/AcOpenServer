@@ -2,7 +2,7 @@
 using OpenSSL.Crypto;
 using System;
 
-namespace AcOpenServer.Core.Crypto
+namespace AcOpenServer.Crypto
 {
     public class RSAKey : IDisposable
     {

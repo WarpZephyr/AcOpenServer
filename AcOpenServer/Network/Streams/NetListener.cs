@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Net;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Core.Network
+namespace AcOpenServer.Network.Streams
 {
     public class NetListener : IDisposable
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AcOpenServer.Core.Logging
+namespace AcOpenServer.Logging
 {
     public class Logger
     {

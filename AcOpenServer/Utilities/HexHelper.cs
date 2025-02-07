@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AcOpenServer.Core.Utilities
+namespace AcOpenServer.Utilities
 {
     internal static class HexHelper
     {
@@ -41,7 +41,7 @@ namespace AcOpenServer.Core.Utilities
             string str = string.Empty;
             for (int i = 0; i < length - 1; i++)
             {
-                if (perLine != -1 && (i % perLine == 0))
+                if (perLine != -1 && i % perLine == 0)
                 {
                     str += "\n";
                 }
@@ -58,9 +58,9 @@ namespace AcOpenServer.Core.Utilities
         }
 
         internal static bool IsHex(this char c)
-            => (c >= '0' && c <= '9')
-                || (c >= 'a' && c <= 'f')
-                || (c >= 'A' && c <= 'F');
+            => c >= '0' && c <= '9'
+                || c >= 'a' && c <= 'f'
+                || c >= 'A' && c <= 'F';
 
         internal static bool IsHex(this string str)
         {
@@ -71,7 +71,7 @@ namespace AcOpenServer.Core.Utilities
 
             foreach (char c in str)
             {
-                if (!IsHex(c))
+                if (!c.IsHex())
                 {
                     return false;
                 }

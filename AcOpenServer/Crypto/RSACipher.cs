@@ -1,7 +1,7 @@
 ﻿using OpenSSL.Crypto;
 using static OpenSSL.Crypto.RSA;
 
-namespace AcOpenServer.Core.Crypto
+namespace AcOpenServer.Crypto
 {
     public class RSACipher : ICipher
     {

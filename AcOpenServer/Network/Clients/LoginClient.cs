@@ -1,6 +1,9 @@
-﻿using AcOpenServer.Core.Logging;
+﻿using AcOpenServer.Logging;
+using AcOpenServer.Network.Data.AC;
 using AcOpenServer.Network.Exceptions;
 using AcOpenServer.Network.Streams;
+using AcOpenServer.Utilities;
+using Google.Protobuf;
 using SVFWRequestMessage;
 using System;
 using System.Collections.Generic;
@@ -34,27 +37,33 @@ namespace AcOpenServer.Network.Clients
                 throw new LoginException($"Received an unexpected message type from client; Received: {message.Header.MessageType}; Expected: {SVFWMessageType.RequestQueryLoginServerInfo}");
             }
 
-            RequestQueryLoginServerInfo request;
-            try
-            {
-                request = RequestQueryLoginServerInfo.Parser.ParseFrom(message.Payload);
-            }
-            catch (Exception ex)
-            {
-                throw new LoginException("Failed to parse message from client as a protobuf.", ex);
-            }
-
+            RequestQueryLoginServerInfo request = Parse<RequestQueryLoginServerInfo>(message);
             Log.Info($"User {request.PlayerId} is trying to login.");
-            if (request.HasF2)
-                Log.Debug($"User f2 is {request.F2}");
-            Log.Debug($"User app version is 0x{request.AppVersion:X2}");
             var response = new RequestQueryLoginServerInfoResponse
             {
                 Port = (uint)AuthPort,
             };
 
             SendQueue.Enqueue(Client.SendAsync(response, SVFWMessageType.Reply, message.Header.MessageIndex));
+            Log.Info($"User {request.PlayerId} logged in successfully.");
         }
+
+        #region Helpers
+
+        private T Parse<T>(SVFWMessage message) where T : IMessage, new()
+        {
+            try
+            {
+                T result = ProtobufHelper.ParseFrom<T>(message.Payload);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new AuthException($"Disconnecting client {Name} due to a {typeof(T).Name} parsing failure.", ex);
+            }
+        }
+
+        #endregion
 
         #region IO
 
