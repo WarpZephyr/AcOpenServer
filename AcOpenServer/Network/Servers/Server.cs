@@ -183,8 +183,8 @@ namespace AcOpenServer.Network.Servers
 
             var serverIP = new IPAddress([0, 0, 0, 0]);
 
-            var loginService = new LoginService(CreateListener(serverIP, Config.LoginPort, PrivateKey), Config.AuthPort, Log);
-            var authService = new AuthService(CreateListener(serverIP, Config.AuthPort, PrivateKey), Log);
+            var loginService = new LoginService(CreateListener(serverIP, Config.LoginPort, PrivateKey, Config.LoginClientTimeout), Config.AuthPort, Log);
+            var authService = new AuthService(CreateListener(serverIP, Config.AuthPort, PrivateKey, Config.AuthClientTimeout), Log);
             var loginTask = loginService.ListenAsync();
             var authTask = authService.ListenAsync();
             await Task.WhenAll(loginTask, authTask);
@@ -216,10 +216,10 @@ namespace AcOpenServer.Network.Servers
             }
         }
 
-        private SVFWMessageListener CreateListener(IPAddress serverIP, int port, RSAKey key)
+        private SVFWMessageListener CreateListener(IPAddress serverIP, int port, RSAKey key, double clientTimeout)
         {
             var tcpListener = new TcpListener(serverIP, port);
-            var netListener = new NetListener(tcpListener);
+            var netListener = new NetListener(tcpListener, clientTimeout, Log);
 
             var decryptionCipher = new RSACipher(key, RSA.Padding.OAEP);
             var encryptionCipher = new RSACipher(key, RSA.Padding.X931);

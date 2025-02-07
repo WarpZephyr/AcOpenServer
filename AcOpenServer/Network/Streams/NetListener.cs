@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AcOpenServer.Logging;
+using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -6,16 +7,20 @@ namespace AcOpenServer.Network.Streams
 {
     public class NetListener : IDisposable
     {
+        private readonly Logger Log;
         private readonly TcpListener Listener;
+        private readonly double ClientTimeout;
         private bool disposedValue;
 
         public bool IsDisposed => disposedValue;
 
         public event EventHandler<NetClient>? Accepted;
 
-        public NetListener(TcpListener listener)
+        public NetListener(TcpListener listener, double clientTimeout, Logger log)
         {
+            Log = log;
             Listener = listener;
+            ClientTimeout = clientTimeout;
         }
 
         #region IO
@@ -26,7 +31,7 @@ namespace AcOpenServer.Network.Streams
             while (true)
             {
                 var client = await Listener.AcceptTcpClientAsync();
-                Accepted?.Invoke(this, new NetClient(client));
+                Accepted?.Invoke(this, new NetClient(client, ClientTimeout, Log));
             }
         }
 

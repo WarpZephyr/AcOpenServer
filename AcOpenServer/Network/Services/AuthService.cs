@@ -41,7 +41,7 @@ namespace AcOpenServer.Network.Services
         private void OnAccepted(object? sender, SVFWMessageClient client)
         {
             var authClient = new AuthClient(client, Log);
-            Log.Info($"Client connected: {authClient.Name}");
+            Log.Info($"{nameof(AuthService)}: Client connected: {authClient.Name}");
 
             ClientReceiveTasks.Add(authClient.ReceiveAsync().ContinueWith(ClientReceiveCleanup));
             ClientSendTasks.Add(authClient.SendAsync().ContinueWith(ClientSendCleanup));

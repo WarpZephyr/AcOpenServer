@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -10,7 +11,8 @@ namespace AcOpenServer.Network.Servers
         GenerationMode = JsonSourceGenerationMode.Metadata,
         IncludeFields = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
-        UseStringEnumConverter = true)]
+        UseStringEnumConverter = true,
+        AllowTrailingCommas = true)]
     [JsonSerializable(typeof(ServerConfig))]
     public partial class ServerConfigSerializerContext : JsonSerializerContext
     {
@@ -30,6 +32,8 @@ namespace AcOpenServer.Network.Servers
         public int GamePort { get; set; }
         public bool LogInfo { get; set; }
         public bool LogWarnings { get; set; }
+        public double LoginClientTimeout { get; set; }
+        public double AuthClientTimeout { get; set; }
 
         public ServerConfig()
         {
@@ -41,9 +45,11 @@ namespace AcOpenServer.Network.Servers
             PublicKeyPath = string.Empty;
             LoginPort = 50011;
             AuthPort = 50008;
-            GamePort = 50010;
+            GamePort = 50030;
             LogInfo = true;
             LogWarnings = true;
+            LoginClientTimeout = 30d;
+            AuthClientTimeout = 30d;
         }
 
         public static bool Load(string path, [NotNullWhen(true)] out ServerConfig? config)
@@ -54,10 +60,18 @@ namespace AcOpenServer.Network.Servers
                 return false;
             }
 
-            config = JsonSerializer.Deserialize(File.ReadAllText(path),
-                ServerConfigSerializerContext.Default.ServerConfig);
-            if (config == null)
+            try
             {
+                config = JsonSerializer.Deserialize(File.ReadAllText(path),
+                    ServerConfigSerializerContext.Default.ServerConfig);
+                if (config == null)
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                config = null;
                 return false;
             }
 

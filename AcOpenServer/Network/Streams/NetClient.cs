@@ -1,15 +1,19 @@
-﻿using System;
+﻿using AcOpenServer.Logging;
+using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Streams
 {
     public class NetClient : IDisposable
     {
+        private readonly Logger Log;
         private readonly TcpClient Client;
         private readonly NetworkStream Stream;
         private readonly string Name;
+        private readonly double Timeout;
         private bool disposedValue;
 
         public byte[]? Buffer { get; set; }
@@ -17,10 +21,12 @@ namespace AcOpenServer.Network.Streams
 
         public event EventHandler<int>? Received;
 
-        public NetClient(TcpClient client)
+        public NetClient(TcpClient client, double timeout, Logger log)
         {
+            Log = log;
             Client = client;
             Stream = client.GetStream();
+            Timeout = timeout;
 
             EndPoint remoteEndPoint = client.Client.RemoteEndPoint ?? throw new Exception("Remote end point was null on a remote connection.");
             Name = $"{remoteEndPoint}";
@@ -37,14 +43,54 @@ namespace AcOpenServer.Network.Streams
 
         public async Task ReceiveAsync()
         {
-            while (true)
+            if (Timeout > 0d)
             {
-                if (Buffer != null)
+                try
                 {
-                    int received = await Stream.ReadAsync(Buffer);
-                    if (received > 0)
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(Timeout));
+                    while (true)
                     {
-                        Received?.Invoke(this, received);
+                        if (!Client.Connected)
+                        {
+                            Log.Warning($"Client {Name} has disconnected.");
+                            Client.Close();
+                            break;
+                        }
+
+                        if (Buffer != null)
+                        {
+                            int received = await Stream.ReadAsync(Buffer, cts.Token);
+                            if (received > 0)
+                            {
+                                Received?.Invoke(this, received);
+                            }
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Log.Warning($"Client {Name} has timed out.");
+                    Client.Close();
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                    if (!Client.Connected)
+                    {
+                        Log.Warning($"Client {Name} has disconnected.");
+                        Client.Close();
+                        break;
+                    }
+
+                    if (Buffer != null)
+                    {
+                        int received = await Stream.ReadAsync(Buffer);
+                        if (received > 0)
+                        {
+                            Received?.Invoke(this, received);
+                        }
                     }
                 }
             }
