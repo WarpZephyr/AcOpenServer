@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace AcOpenServer.Logging
@@ -58,6 +59,30 @@ namespace AcOpenServer.Logging
 
         #endregion
 
+        #region Timer
+
+        public TimeSpan Period
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Logger.Period;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Logger.Period = value;
+        }
+
+        public bool DoTimer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Logger.DoTimer;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Logger.DoTimer = value;
+        }
+
+        #endregion
+
+        #region Constructors
+
         public ScopeLog(Logger logger, string scope) : this(logger, scope, null) { }
 
         private ScopeLog(Logger logger, string scope, ScopeLog? parent)
@@ -67,6 +92,10 @@ namespace AcOpenServer.Logging
             Parent = parent;
         }
 
+        #endregion
+
+        #region Scope Factory
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ScopeLog Push(string scope)
             => new(Logger, $"{Scope}{scope}", this);
@@ -74,6 +103,8 @@ namespace AcOpenServer.Logging
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ScopeLog Pop()
             => Parent ?? this;
+
+        #endregion
 
         #region Log
 

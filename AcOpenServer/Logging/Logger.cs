@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace AcOpenServer.Logging
 {
@@ -20,9 +19,49 @@ namespace AcOpenServer.Logging
         private readonly StringBuilder Buffer;
         private readonly Queue<string> Queue;
         private int CurrentQueueLength;
+        private TimeSpan PeriodInternal;
+        private bool DoTimerInternal;
         private bool disposedValue;
 
         public WriteDelegete WriteCallback { get; set; }
+
+        #region Timer
+
+        public TimeSpan Period
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => PeriodInternal;
+            set
+            {
+                if (DoTimer)
+                {
+                    Timer.Change(TimeSpan.Zero, value);
+                }
+
+                PeriodInternal = value;
+            }
+        }
+
+        public bool DoTimer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => DoTimerInternal;
+            set
+            {
+                if (value && !DoTimerInternal)
+                {
+                    Timer.Change(TimeSpan.Zero, Period);
+                }
+                else if (!value && DoTimerInternal)
+                {
+                    Timer.Change(TimeSpan.Zero, TimeSpan.Zero);
+                }
+
+                DoTimerInternal = value;
+            }
+        }
+
+        #endregion
 
         #region Channel Flags
 
@@ -98,14 +137,30 @@ namespace AcOpenServer.Logging
 
         #endregion
 
+        #region Constructors
+
+        public Logger(WriteDelegete writeCallback) : this(TimeSpan.Zero, writeCallback)
+        {
+        }
+
         public Logger(TimeSpan period, WriteDelegete writeCallback)
         {
+            DoTimerInternal = period != TimeSpan.Zero;
+            PeriodInternal = period;
             Timer = new Timer(TimerHandler, null, TimeSpan.Zero, period);
             Buffer = new StringBuilder();
             Queue = new Queue<string>();
             CurrentQueueLength = 0;
             WriteCallback = writeCallback;
         }
+
+        #endregion
+
+        #region Factory
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Logger FromConsole()
+            => new(Console.Write);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Logger FromConsole(TimeSpan period)
@@ -115,6 +170,10 @@ namespace AcOpenServer.Logging
         public static Logger FromConsoleSeconds(int seconds)
             => new(TimeSpan.FromSeconds(seconds), Console.Write);
 
+        #endregion
+
+        #region Callbacks
+
         private void TimerHandler(object? state)
         {
             lock (Timer)
@@ -122,6 +181,10 @@ namespace AcOpenServer.Logging
                 Flush();
             }
         }
+
+        #endregion
+
+        #region Flush
 
         public void Flush()
         {
@@ -141,6 +204,17 @@ namespace AcOpenServer.Logging
             WriteCallback(Buffer.ToString());
         }
 
+        private void CheckFlushState()
+        {
+            // Flush immediately
+            if (!DoTimer)
+            {
+                Flush();
+            }
+        }
+
+        #endregion
+
         #region Enqueue
 
         private void Enqueue(string value)
@@ -148,6 +222,7 @@ namespace AcOpenServer.Logging
             // Avoid allocating new string to combine them
             Queue.Enqueue(value);
             CurrentQueueLength += value.Length;
+            CheckFlushState();
         }
 
         private void EnqueueLine(string value)
@@ -156,6 +231,7 @@ namespace AcOpenServer.Logging
             Queue.Enqueue(value);
             Queue.Enqueue(Environment.NewLine);
             CurrentQueueLength += value.Length + Environment.NewLine.Length;
+            CheckFlushState();
         }
 
         private void EnqueueWrapLine(string start, string value)
@@ -165,6 +241,7 @@ namespace AcOpenServer.Logging
             Queue.Enqueue(value);
             Queue.Enqueue(Environment.NewLine);
             CurrentQueueLength += value.Length + start.Length + Environment.NewLine.Length;
+            CheckFlushState();
         }
 
         private void EnqueueScoped(string scope, string value)
@@ -173,6 +250,7 @@ namespace AcOpenServer.Logging
             Queue.Enqueue(scope);
             Queue.Enqueue(value);
             CurrentQueueLength += value.Length + scope.Length;
+            CheckFlushState();
         }
 
         private void EnqueueLineScoped(string scope, string value)
@@ -182,6 +260,7 @@ namespace AcOpenServer.Logging
             Queue.Enqueue(value);
             Queue.Enqueue(Environment.NewLine);
             CurrentQueueLength += value.Length + scope.Length + Environment.NewLine.Length;
+            CheckFlushState();
         }
 
         private void EnqueueWrapLineScoped(string start, string scope, string value)
@@ -192,6 +271,7 @@ namespace AcOpenServer.Logging
             Queue.Enqueue(value);
             Queue.Enqueue(Environment.NewLine);
             CurrentQueueLength += value.Length + start.Length + scope.Length + Environment.NewLine.Length;
+            CheckFlushState();
         }
 
         #endregion

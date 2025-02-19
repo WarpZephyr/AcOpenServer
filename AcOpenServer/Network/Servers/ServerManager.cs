@@ -1,5 +1,6 @@
 ﻿using AcOpenServer.Crypto;
 using AcOpenServer.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -66,6 +67,7 @@ namespace AcOpenServer.Network.Servers
                 Log.Info($"Started server: {server}");
             }
 
+            Log.Period = TimeSpan.FromSeconds(2);
             return Task.WhenAll(ServerTasks);
         }
 

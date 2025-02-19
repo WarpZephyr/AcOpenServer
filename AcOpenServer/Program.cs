@@ -14,7 +14,7 @@ namespace AcOpenServer
     {
         static readonly string ProgramFolder = GetProgramFolder();
         static readonly string ServersFolder = Path.Combine(ProgramFolder, "Saved");
-        static readonly Logger Log = StartLog();
+        static readonly Logger Log = Logger.FromConsole();
 
         static async Task Main(string[] args)
         {
@@ -397,11 +397,6 @@ namespace AcOpenServer
         static string GetPrivateKeyPath()
         {
             return Path.Combine(ProgramFolder, "privatekey.pem");
-        }
-
-        static Logger StartLog()
-        {
-            return Logger.FromConsoleSeconds(1);
         }
 
         #endregion
