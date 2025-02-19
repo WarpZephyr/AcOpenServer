@@ -1,7 +1,8 @@
 ﻿using AcOpenServer.Crypto;
 using AcOpenServer.Logging;
-using AcOpenServer.Network.Services;
-using AcOpenServer.Network.Streams;
+using AcOpenServer.Network.Data.AC;
+using AcOpenServer.Network.Communication;
+using AcOpenServer.Utilities;
 using OpenSSL.Crypto;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -9,6 +10,10 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using AcOpenServer.Network.Services.Login;
+using AcOpenServer.Network.Services.Authentication;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace AcOpenServer.Network.Servers
 {
@@ -18,7 +23,10 @@ namespace AcOpenServer.Network.Servers
         private const string PublicKeyFileName = "publickey.pem";
         private const string PrivateKeyFileName = "privatekey.pem";
 
-        private readonly Logger Log;
+        private static readonly AcvAppVersion MinimumAppVersion = new AcvAppVersion(0x5644000001000002);
+        private static readonly AcvAppVersion MaximumAppVersion = new AcvAppVersion(0x5644000001000002);
+
+        private readonly ScopeLog Log;
         private readonly string ServerFolder;
         private ServerConfig? Config;
         private RSAKey? PrivateKey;
@@ -27,15 +35,15 @@ namespace AcOpenServer.Network.Servers
 
         public string Name { get; init; }
 
-        public Server(string serverFolder, Logger log)
+        public Server(string serverFolder, string name, ScopeLog log)
         {
             Log = log;
             ServerFolder = serverFolder;
 
-            Name = Path.GetFileName(serverFolder);
+            Name = name;
         }
 
-        public Server(string serverFolder, string name, RSAKey privateKey, ServerConfig config, Logger log)
+        public Server(string serverFolder, string name, RSAKey privateKey, ServerConfig config, ScopeLog log)
         {
             Log = log;
             ServerFolder = serverFolder;
@@ -49,7 +57,7 @@ namespace AcOpenServer.Network.Servers
         {
             if (!Directory.Exists(ServerFolder))
             {
-                Log.Error($"Server folder doesn't exist.");
+                Log.Error("Server folder doesn't exist.");
                 return false;
             }
 
@@ -58,13 +66,13 @@ namespace AcOpenServer.Network.Servers
                 string configPath = Path.Combine(ServerFolder, ConfigFileName);
                 if (!File.Exists(configPath))
                 {
-                    Log.Warning($"Could not find {ConfigFileName} for {Name} server, making a default config.");
+                    Log.Warn($"Could not find {ConfigFileName} for {Name} server, making a default config.");
                     Config = new ServerConfig();
                     Config.Save(configPath);
                 }
                 else if (!ServerConfig.Load(configPath, out ServerConfig? config))
                 {
-                    Log.Warning($"Failed to load {ConfigFileName} for {Name} server, using default config.");
+                    Log.Warn($"Failed to load {ConfigFileName} for {Name} server, using default config.");
                     Config = new ServerConfig();
                 }
                 else
@@ -74,21 +82,21 @@ namespace AcOpenServer.Network.Servers
             }
 
 #if DEBUG
-            Log.EnabledChannels = Logger.LogChannelFlags.Debug;
+            Log.ChannelFlags = LogChannelFlags.Debug;
 #else
-            Log.EnabledChannels = Logger.LogChannelFlags.None;
+            Log.ChannelFlags = LogChannelFlags.None;
 #endif
             if (Config.LogInfo)
             {
-                Log.EnabledChannels |= Logger.LogChannelFlags.Info;
+                Log.ChannelFlags |= LogChannelFlags.Info;
             }
 
             if (Config.LogWarnings)
             {
-                Log.EnabledChannels |= Logger.LogChannelFlags.Warning;
+                Log.ChannelFlags |= LogChannelFlags.Warn;
             }
 
-            Log.EnabledChannels |= Logger.LogChannelFlags.Error;
+            Log.ChannelFlags |= LogChannelFlags.Error;
 
             if (PrivateKey == null)
             {
@@ -109,71 +117,17 @@ namespace AcOpenServer.Network.Servers
             }
             else
             {
-                try
+                PublicIP = await ResolveHostnameAsync(Config.PublicHostname, true);
+                if (PublicIP == null)
                 {
-                    var publicHost = await Dns.GetHostEntryAsync(Config.PublicHostname);
-                    if (publicHost.AddressList.Length > 0)
-                    {
-                        bool foundIPV4 = false;
-                        foreach (var address in publicHost.AddressList)
-                        {
-                            if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                            {
-                                PublicIP = address;
-                                foundIPV4 = true;
-                                break;
-                            }
-                        }
-
-                        if (!foundIPV4)
-                        {
-                            Log.Error($"Failed to find a usable IPV4 address from the public host: {Config.PublicHostname}");
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        Log.Error($"Failed to resolve public hostname: {Config.PublicHostname}");
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"An error occurred while resolving public hostname: {Config.PublicHostname}\n{ex}");
+                    Log.Error($"Failed to resolve public hostname: {Config.PublicHostname}");
                     return false;
                 }
 
-                try
+                PrivateIP = await ResolveHostnameAsync(Config.PrivateHostname, false);
+                if (PrivateIP == null)
                 {
-                    var privateHost = await Dns.GetHostEntryAsync(Config.PrivateHostname);
-                    if (privateHost.AddressList.Length > 0)
-                    {
-                        bool foundIPV4 = false;
-                        foreach (var address in privateHost.AddressList)
-                        {
-                            if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                            {
-                                PrivateIP = address;
-                                foundIPV4 = true;
-                                break;
-                            }
-                        }
-
-                        if (!foundIPV4)
-                        {
-                            Log.Error($"Failed to find a usable IPV4 address from the private host: {Config.PrivateHostname}");
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        Log.Error($"Failed to resolve private hostname: {Config.PrivateHostname}");
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"An error occurred while resolving private hostname: {Config.PrivateHostname}\n{ex}");
+                    Log.Error($"Failed to resolve private hostname: {Config.PrivateHostname}");
                     return false;
                 }
             }
@@ -181,17 +135,44 @@ namespace AcOpenServer.Network.Servers
             Log.Info($"Public ip: {PublicIP}");
             Log.Info($"Private ip: {PrivateIP}");
 
-            var serverIP = new IPAddress([0, 0, 0, 0]);
+            if (!IPAddressHelper.TryGetIPV4UInt32(PublicIP, out uint publicIP))
+            {
+                Log.Error("Failed to get numeric representation of public IP address.");
+                return false;
+            }
 
-            var loginService = new LoginService(CreateListener(serverIP, Config.LoginPort, PrivateKey, Config.LoginClientTimeout), Config.AuthPort, Log);
-            var authService = new AuthService(CreateListener(serverIP, Config.AuthPort, PrivateKey, Config.AuthClientTimeout), Log);
+            if (!IPAddressHelper.TryGetIPV4UInt32(PrivateIP, out uint privateIP))
+            {
+                Log.Error("Failed to get numeric representation of private IP address.");
+                return false;
+            }
+
+            var listenIP = new IPAddress([0, 0, 0, 0]);
+            var loginListener = CreateListener(listenIP, Config.LoginPort, PrivateKey, Config.LoginClientTimeout);
+            var authListener = CreateListener(listenIP, Config.AuthPort, PrivateKey, Config.AuthClientTimeout);
+            var loginConfig = new LoginConfig()
+            {
+                AuthPort = (uint)Config.AuthPort
+            };
+
+            var authConfig = new AuthConfig()
+            {
+                PublicIP = publicIP,
+                PrivateIP = privateIP,
+                GamePort = (ushort)Config.GamePort,
+                MinimumVersion = MinimumAppVersion,
+                MaximumVersion = MaximumAppVersion
+            };
+
+            var loginService = new LoginService(loginListener, loginConfig, Log.Push(nameof(LoginService)));
+            var authService = new AuthService(authListener, authConfig, Log.Push(nameof(AuthService)));
             var loginTask = loginService.ListenAsync();
             var authTask = authService.ListenAsync();
             await Task.WhenAll(loginTask, authTask);
             return true;
         }
 
-        #region Helpers
+        #region Cryptography
 
         private bool LoadKey(string filename, bool isPublic, [NotNullWhen(true)] out RSAKey? key)
         {
@@ -216,15 +197,74 @@ namespace AcOpenServer.Network.Servers
             }
         }
 
+        #endregion
+
+        #region Network
+
         private SVFWMessageListener CreateListener(IPAddress serverIP, int port, RSAKey key, double clientTimeout)
         {
             var tcpListener = new TcpListener(serverIP, port);
-            var netListener = new NetListener(tcpListener, clientTimeout, Log);
+            var netListener = new NetTcpListener(tcpListener, clientTimeout, Log.Push(nameof(NetTcpListener)));
 
             var decryptionCipher = new RSACipher(key, RSA.Padding.OAEP);
             var encryptionCipher = new RSACipher(key, RSA.Padding.X931);
             var messageListener = new SVFWMessageListener(netListener, encryptionCipher, decryptionCipher);
             return messageListener;
+        }
+
+        private static bool TryResolveHostname(IPHostEntry host, [NotNullWhen(true)] out IPAddress? ip)
+        {
+            if (host.AddressList.Length > 0)
+            {
+                foreach (IPAddress address in host.AddressList)
+                {
+                    if (address.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        ip = address;
+                        return true;
+                    }
+                }
+
+                ip = null;
+                return false;
+            }
+            else
+            {
+                ip = null;
+                return false;
+            }
+        }
+
+        private static async Task<IPAddress?> ResolveHostnameAsync(string hostname, bool isPublic)
+        {
+            try
+            {
+                string name = hostname;
+                if (string.IsNullOrWhiteSpace(hostname))
+                {
+                    if (isPublic)
+                    {
+                        using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.IP);
+                        socket.Connect("8.8.8.8", 65530);
+                        if (socket.LocalEndPoint is not IPEndPoint endPoint)
+                            return null;
+
+                        return endPoint.Address;
+                    }
+                    else
+                    {
+                        name = Dns.GetHostName();
+                    }
+                }
+
+                var host = await Dns.GetHostEntryAsync(name);
+                TryResolveHostname(host, out IPAddress? ip);
+                return ip;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         #endregion

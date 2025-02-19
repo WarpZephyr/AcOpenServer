@@ -1,5 +1,5 @@
 ﻿using AcOpenServer.Logging;
-using AcOpenServer.Network;
+using AcOpenServer.Network.Servers;
 using AcOpenServer.Tests;
 using AcOpenServer.Utilities;
 using System;
@@ -18,7 +18,6 @@ namespace AcOpenServer
 
         static async Task Main(string[] args)
         {
-            
 #if DEBUG
             await HandleTests(args);
 #endif
@@ -402,7 +401,7 @@ namespace AcOpenServer
 
         static Logger StartLog()
         {
-            return new Logger();
+            return Logger.FromConsoleSeconds(1);
         }
 
         #endregion

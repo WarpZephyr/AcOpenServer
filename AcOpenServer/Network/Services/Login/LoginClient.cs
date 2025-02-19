@@ -1,69 +1,63 @@
 ﻿using AcOpenServer.Logging;
 using AcOpenServer.Network.Data.AC;
-using AcOpenServer.Network.Exceptions;
-using AcOpenServer.Network.Streams;
+using AcOpenServer.Network.Communication;
 using AcOpenServer.Utilities;
-using Google.Protobuf;
 using SVFWRequestMessage;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
-namespace AcOpenServer.Network.Clients
+namespace AcOpenServer.Network.Services.Login
 {
     public class LoginClient : IDisposable, IAsyncDisposable
     {
-        private readonly Logger Log;
         private readonly SVFWMessageClient Client;
+        private readonly LoginConfig Config;
+        private readonly ScopeLog Log;
         private readonly Queue<Task> SendQueue;
-        private readonly int AuthPort;
         private bool disposedValue;
 
         public string Name => Client.Name;
         public bool IsDisposed => disposedValue;
+        public bool Disconnected => disposedValue;
 
-        public LoginClient(SVFWMessageClient client, int authPort, Logger log)
+        public LoginClient(SVFWMessageClient client, LoginConfig config, ScopeLog log)
         {
-            Log = log;
             Client = client;
-            AuthPort = authPort;
+            Config = config;
+            Log = log;
             SendQueue = [];
         }
 
         private void Service(SVFWMessage message)
         {
+            // Validate we are getting the expected message
             if (message.Header.MessageType != SVFWMessageType.RequestQueryLoginServerInfo)
             {
-                throw new LoginException($"Received an unexpected message type from client; Received: {message.Header.MessageType}; Expected: {SVFWMessageType.RequestQueryLoginServerInfo}");
+                Disconnect($"Disconnecting client {Name} due to an unexpected message type for {nameof(RequestQueryLoginServerInfo)}: {message.Header.MessageType}");
+                return;
             }
 
-            RequestQueryLoginServerInfo request = Parse<RequestQueryLoginServerInfo>(message);
-            Log.Info($"User {request.PlayerId} is trying to login.");
+            // Parse the message protobuf
+            if (!ProtobufHelper.TryParse(message.Payload, out RequestQueryLoginServerInfo? request, out string? error))
+            {
+                Disconnect($"Disconnecting client {Name} due to a {nameof(RequestQueryLoginServerInfo)} parsing failure: {error}");
+                return;
+            }
+
+            // Build the response
+            var appVersion = new AcvAppVersion(request.AppVersion);
+            Log.Info($"User logging in: {request.PlayerName} {appVersion}");
             var response = new RequestQueryLoginServerInfoResponse
             {
-                Port = (uint)AuthPort,
+                Port = Config.AuthPort
             };
 
+            // Send the response
             SendQueue.Enqueue(Client.SendAsync(response, SVFWMessageType.Reply, message.Header.MessageIndex));
-            Log.Info($"User {request.PlayerId} logged in successfully.");
+            Log.Info($"User logged in: {request.PlayerName}");
         }
-
-        #region Helpers
-
-        private T Parse<T>(SVFWMessage message) where T : IMessage, new()
-        {
-            try
-            {
-                T result = ProtobufHelper.ParseFrom<T>(message.Payload);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new AuthException($"Disconnecting client {Name} due to a {typeof(T).Name} parsing failure.", ex);
-            }
-        }
-
-        #endregion
 
         #region IO
 
@@ -80,6 +74,23 @@ namespace AcOpenServer.Network.Clients
                 await sendTask;
             }
         }
+
+        #endregion
+
+        #region Network
+
+        public bool IsConnected()
+            => Client.IsConnected();
+
+        public void Disconnect(string message)
+        {
+            Log.Warn(message);
+            Disconnect();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Disconnect()
+            => Dispose();
 
         #endregion
 

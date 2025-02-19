@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Services
 {
-    public interface IService : IDisposable, IAsyncDisposable
+    public interface IService : IDisposable
     {
         public Task ListenAsync();
     }

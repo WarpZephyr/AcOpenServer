@@ -1,43 +1,41 @@
 ﻿using AcOpenServer.Logging;
+using AcOpenServer.Utilities;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Streams
+namespace AcOpenServer.Network.Communication
 {
-    public class NetClient : IDisposable
+    public class NetTcpClient : IDisposable
     {
-        private readonly Logger Log;
         private readonly TcpClient Client;
-        private readonly NetworkStream Stream;
-        private readonly string Name;
         private readonly double Timeout;
+        private readonly ScopeLog Log;
+        private readonly NetworkStream Stream;
+        private readonly bool IsPrivateClient;
+        private readonly string Name;
         private bool disposedValue;
 
         public byte[]? Buffer { get; set; }
         public bool IsDisposed => disposedValue;
+        public bool Disconnected => disposedValue;
 
         public event EventHandler<int>? Received;
 
-        public NetClient(TcpClient client, double timeout, Logger log)
+        public NetTcpClient(TcpClient client, double timeout, ScopeLog log)
         {
-            Log = log;
             Client = client;
-            Stream = client.GetStream();
             Timeout = timeout;
+            Log = log;
+            Stream = client.GetStream();
+            IsPrivateClient = IPAddressHelper.IsPrivateRemoteTcpClient(client);
 
             EndPoint remoteEndPoint = client.Client.RemoteEndPoint ?? throw new Exception("Remote end point was null on a remote connection.");
             Name = $"{remoteEndPoint}";
         }
-
-        #region Name
-
-        public string GetName()
-            => Name;
-
-        #endregion
 
         #region IO
 
@@ -52,7 +50,7 @@ namespace AcOpenServer.Network.Streams
                     {
                         if (!Client.Connected)
                         {
-                            Log.Warning($"Client {Name} has disconnected.");
+                            Log.Warn($"Client {Name} has disconnected.");
                             Client.Close();
                             break;
                         }
@@ -69,7 +67,7 @@ namespace AcOpenServer.Network.Streams
                 }
                 catch (OperationCanceledException)
                 {
-                    Log.Warning($"Client {Name} has timed out.");
+                    Log.Warn($"Client {Name} has timed out.");
                     Client.Close();
                 }
             }
@@ -79,7 +77,7 @@ namespace AcOpenServer.Network.Streams
                 {
                     if (!Client.Connected)
                     {
-                        Log.Warning($"Client {Name} has disconnected.");
+                        Log.Warn($"Client {Name} has disconnected.");
                         Client.Close();
                         break;
                     }
@@ -99,6 +97,43 @@ namespace AcOpenServer.Network.Streams
         public Task SendAsync(byte[] buffer)
         {
             return Stream.WriteAsync(buffer).AsTask();
+        }
+
+        #endregion
+
+        #region Network
+
+        public bool IsPrivateNetwork()
+            => IsPrivateClient;
+
+        public bool IsPublicNetwork()
+            => !IsPrivateClient;
+
+        public bool IsConnected()
+        {
+            if (Disconnected)
+                return false;
+            return !(Client.Client.Poll(1, SelectMode.SelectRead) && Client.Client.Available == 0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Disconnect()
+            => Dispose();
+
+        #endregion
+
+        #region Name
+
+        public string GetName()
+            => Name;
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return GetName();
         }
 
         #endregion
@@ -123,15 +158,6 @@ namespace AcOpenServer.Network.Streams
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
-        }
-
-        #endregion
-
-        #region ToString
-
-        public override string ToString()
-        {
-            return GetName();
         }
 
         #endregion

@@ -12,7 +12,7 @@ package SVFWRequestMessage;
 // First message sent to the login server, used to request
 // the port and server_ip to authenticate over.
 message RequestQueryLoginServerInfo {
-    required string player_id = 1;
+    required string player_name = 1;
     optional string f2 = 2;
     required uint64 app_version = 3;
 }
@@ -38,22 +38,22 @@ message RequestHandshake {
 message RequestHandshakeResponse {
 }
 
-// Sent after handshake, all seemingly constant data (apart from the player_id). 
+// Sent after handshake, all seemingly constant data (apart from the player_name). 
 // Presumably used for ensure we are connecting to a compatible server?
 message GetServiceStatus {
     required uint32 id = 1;              
-    required string player_id = 2;
+    required string player_name = 2;
     optional string unk3 = 3;
     required uint64 app_version = 4;
 }
 
 // Response to GetServiceStatus, contains identical data to what is sent
-// with the exception of a blank player_id. Presumably if we connected to a dev server
+// with the exception of a blank player_name. Presumably if we connected to a dev server
 // or something we would get different responses.
 // If we are on an older version of the game an empty response is sent back for this.
 message GetServiceStatusResponse {
     optional uint32 id = 1;
-    optional string player_id = 2;
+    optional string player_name = 2;
     optional bool unk3 = 3;
     optional int32 app_version = 4;
 }

@@ -1,17 +1,19 @@
 ﻿using AcOpenServer.Binary;
+using AcOpenServer.Network.Communication;
 using AcOpenServer.Network.Data.AC;
 using AcOpenServer.Network.Exceptions;
 using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Streams
+namespace AcOpenServer.Network.Communication
 {
     public class SVFWPacketClient : IDisposable
     {
         private const int PacketHeaderSize = 12;
-        private readonly NetClient Client;
+        private readonly NetTcpClient Client;
         private bool ReceivingPrefix;
         private int ExpectingCount;
         private ushort PacketsSent;
@@ -19,14 +21,28 @@ namespace AcOpenServer.Network.Streams
 
         public string Name => Client.GetName();
         public bool IsDisposed => disposedValue;
+        public bool Disconnected => disposedValue;
 
         public event EventHandler<SVFWPacket>? Received;
 
-        public SVFWPacketClient(NetClient client)
+        public SVFWPacketClient(NetTcpClient client)
         {
             Client = client;
             ReceivingPrefix = true;
         }
+
+        #region Network
+
+        public bool IsPrivateNetwork()
+            => Client.IsPrivateNetwork();
+
+        public bool IsPublicNetwork()
+            => Client.IsPublicNetwork();
+
+        public bool IsConnected()
+            => Client.IsConnected();
+
+        #endregion
 
         #region IO
 
@@ -53,6 +69,14 @@ namespace AcOpenServer.Network.Streams
             Write(packet, buffer, sizeof(ushort));
             return Client.SendAsync(buffer);
         }
+
+        #endregion
+
+        #region Disconnect
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Disconnect()
+            => Dispose();
 
         #endregion
 

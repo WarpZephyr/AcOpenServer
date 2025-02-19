@@ -5,9 +5,10 @@ using AcOpenServer.Network.Exceptions;
 using Google.Protobuf;
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Streams
+namespace AcOpenServer.Network.Communication
 {
     public class SVFWMessageClient : IDisposable
     {
@@ -21,6 +22,7 @@ namespace AcOpenServer.Network.Streams
         public bool CipherEnabled { get; set; }
         public string Name => Client.Name;
         public bool IsDisposed => disposedValue;
+        public bool Disconnected => disposedValue;
 
         public event EventHandler<SVFWMessage>? Received;
 
@@ -39,6 +41,19 @@ namespace AcOpenServer.Network.Streams
             EncryptionCipher = encryptionCipher;
             DecryptionCipher = decryptionCipher;
         }
+
+        #endregion
+
+        #region Network
+
+        public bool IsPrivateNetwork()
+            => Client.IsPrivateNetwork();
+
+        public bool IsPublicNetwork()
+            => Client.IsPublicNetwork();
+
+        public bool IsConnected()
+            => Client.IsConnected();
 
         #endregion
 
@@ -88,6 +103,14 @@ namespace AcOpenServer.Network.Streams
             var message = new SVFWMessage(payload);
             return SendAsync(message, messageType, messageIndex);
         }
+
+        #endregion
+
+        #region Disconnect
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Disconnect()
+            => Dispose();
 
         #endregion
 

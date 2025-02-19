@@ -1,4 +1,5 @@
 ﻿using AcOpenServer.Binary;
+using AcOpenServer.Network.Exceptions;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -141,13 +142,37 @@ namespace AcOpenServer.Network.Data.RPCN
             Version = BinaryBufferReader.ReadUInt32BigEndian(payload, ref offset);
             int size = BinaryBufferReader.ReadInt32BigEndian(payload, ref offset);
             if (size < 0)
-                throw new NotSupportedException($"Payloads bigger than {int.MaxValue} are not supported; Size: {(uint)size}");
+                throw new TicketParseException($"Payloads bigger than {int.MaxValue} are not supported; Size: {(uint)size}");
 
             if (size > payload.Length - 8)
-                throw new InvalidDataException($"Payload buffer is too small for the specified data size; Minimum Expected: {size}, Remaining: {payload.Length - 8}");
+                throw new TicketParseException($"Payload buffer is too small for the specified data size; Minimum Expected: {size}, Remaining: {payload.Length - 8}");
 
             ReadUserdata(payload, ref offset);
             ReadSignature(payload, ref offset);
+        }
+
+        #endregion
+
+        #region Parse
+
+        public static Ticket Parse(Span<byte> payload)
+            => new Ticket(payload);
+
+        public static bool TryParse(Span<byte> payload, [NotNullWhen(true)] out Ticket? result, [NotNullWhen(false)] out string? error)
+        {
+            // TODO Stop using exceptions as logic
+            try
+            {
+                result = Parse(payload);
+                error = null;
+                return true;
+            }
+            catch (TicketParseException ex)
+            {
+                result = null;
+                error = ex.Message;
+                return false;
+            }
         }
 
         #endregion
@@ -158,7 +183,7 @@ namespace AcOpenServer.Network.Data.RPCN
         {
             var type = (TicketDataType)BinaryBufferReader.ReadUInt16BigEndian(payload, ref offset);
             if (type != expectedType)
-                throw new InvalidDataException($"Unexpected {nameof(TicketDataType)}; Expected: {expectedType}, Received: {type}");
+                throw new TicketParseException($"Unexpected {nameof(TicketDataType)}; Expected: {expectedType}, Received: {type}");
 
             // Length
             return BinaryBufferReader.ReadUInt16BigEndian(payload, ref offset);
@@ -168,11 +193,11 @@ namespace AcOpenServer.Network.Data.RPCN
         {
             var type = (TicketDataType)BinaryBufferReader.ReadUInt16BigEndian(payload, ref offset);
             if (type != expectedType)
-                throw new InvalidDataException($"Unexpected {nameof(TicketDataType)}; Expected: {expectedType}, Received: {type}");
+                throw new TicketParseException($"Unexpected {nameof(TicketDataType)}; Expected: {expectedType}, Received: {type}");
 
             var length = BinaryBufferReader.ReadUInt16BigEndian(payload, ref offset);
             if (length != expectedLength)
-                throw new InvalidDataException($"Unexpected {nameof(TicketDataType)} length; Expected: {expectedLength}, Received: {length}");
+                throw new TicketParseException($"Unexpected {nameof(TicketDataType)} length; Expected: {expectedLength}, Received: {length}");
         }
 
         private static uint ReadTicketDataU32(Span<byte> payload, ref int offset)

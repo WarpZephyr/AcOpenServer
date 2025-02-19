@@ -1,12 +1,13 @@
 ﻿using AcOpenServer.Crypto;
+using AcOpenServer.Network.Communication;
 using System;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Streams
+namespace AcOpenServer.Network.Communication
 {
     public class SVFWMessageListener : IDisposable
     {
-        private readonly NetListener Listener;
+        private readonly NetTcpListener Listener;
         private readonly ICipher EncryptionCipher;
         private readonly ICipher DecryptionCipher;
         private bool disposedValue;
@@ -15,7 +16,7 @@ namespace AcOpenServer.Network.Streams
 
         public event EventHandler<SVFWMessageClient>? Accepted;
 
-        public SVFWMessageListener(NetListener listener, ICipher encryptionCipher, ICipher decryptionCipher)
+        public SVFWMessageListener(NetTcpListener listener, ICipher encryptionCipher, ICipher decryptionCipher)
         {
             Listener = listener;
             EncryptionCipher = encryptionCipher;
@@ -34,7 +35,7 @@ namespace AcOpenServer.Network.Streams
 
         #region Callbacks
 
-        private void OnAccepted(object? sender, NetClient client)
+        private void OnAccepted(object? sender, NetTcpClient client)
         {
             var packetClient = new SVFWPacketClient(client);
             var messageClient = new SVFWMessageClient(packetClient, EncryptionCipher, DecryptionCipher);

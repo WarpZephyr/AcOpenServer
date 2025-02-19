@@ -1,11 +1,11 @@
 ﻿using AcOpenServer.Crypto;
 using AcOpenServer.Logging;
-using AcOpenServer.Network.Servers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
-namespace AcOpenServer.Network
+namespace AcOpenServer.Network.Servers
 {
     public class ServerManager
     {
@@ -27,7 +27,8 @@ namespace AcOpenServer.Network
             bool serverFound = false;
             foreach (var folder in Directory.EnumerateDirectories(serversFolder))
             {
-                Servers.Add(new Server(folder, new Logger()));
+                string name = Path.GetFileName(folder);
+                Servers.Add(new Server(folder, name, Log.Scope(name)));
                 serverFound = true;
             }
 
@@ -53,7 +54,7 @@ namespace AcOpenServer.Network
             var config = new ServerConfig();
             config.Save(serverConfigPath);
 
-            return new Server(serverFolder, DefaultServerName, key, config, Log);
+            return new Server(serverFolder, DefaultServerName, key, config, Log.Scope(DefaultServerName));
         }
 
         public Task StartServersAsync()
@@ -62,7 +63,7 @@ namespace AcOpenServer.Network
             foreach (var server in Servers)
             {
                 ServerTasks.Add(server.StartAsync().ContinueWith(ServerCleanup));
-                Log.Info($"Started {server}");
+                Log.Info($"Started server: {server}");
             }
 
             return Task.WhenAll(ServerTasks);

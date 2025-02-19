@@ -126,66 +126,66 @@ namespace AcOpenServer.Binary
 
         #region UInt16
 
-        public static UInt16 ReadUInt16(Span<byte> buffer)
-            => Unsafe.ReadUnaligned<UInt16>(ref buffer[0]);
+        public static ushort ReadUInt16(Span<byte> buffer)
+            => Unsafe.ReadUnaligned<ushort>(ref buffer[0]);
 
-        public static UInt16 ReadUInt16(Span<byte> buffer, int offset)
-            => Unsafe.ReadUnaligned<UInt16>(ref buffer[offset]);
+        public static ushort ReadUInt16(Span<byte> buffer, int offset)
+            => Unsafe.ReadUnaligned<ushort>(ref buffer[offset]);
 
-        public static UInt16 ReadUInt16(Span<byte> buffer, ref int offset)
+        public static ushort ReadUInt16(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt16>(ref buffer[offset]);
-            offset += sizeof(UInt16);
+            var value = Unsafe.ReadUnaligned<ushort>(ref buffer[offset]);
+            offset += sizeof(ushort);
             return value;
         }
 
-        public static UInt16 ReadUInt16BigEndian(Span<byte> buffer)
+        public static ushort ReadUInt16BigEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<UInt16>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<ushort>(ref buffer[0]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt16 ReadUInt16BigEndian(Span<byte> buffer, int offset)
+        public static ushort ReadUInt16BigEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt16>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<ushort>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt16 ReadUInt16BigEndian(Span<byte> buffer, ref int offset)
+        public static ushort ReadUInt16BigEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt16>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<ushort>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(UInt16);
+            offset += sizeof(ushort);
             return value;
         }
 
-        public static UInt16 ReadUInt16LittleEndian(Span<byte> buffer)
+        public static ushort ReadUInt16LittleEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<UInt16>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<ushort>(ref buffer[0]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt16 ReadUInt16LittleEndian(Span<byte> buffer, int offset)
+        public static ushort ReadUInt16LittleEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt16>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<ushort>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt16 ReadUInt16LittleEndian(Span<byte> buffer, ref int offset)
+        public static ushort ReadUInt16LittleEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt16>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<ushort>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(UInt16);
+            offset += sizeof(ushort);
             return value;
         }
 
@@ -193,66 +193,66 @@ namespace AcOpenServer.Binary
 
         #region Int32
 
-        public static Int32 ReadInt32(Span<byte> buffer)
-            => Unsafe.ReadUnaligned<Int32>(ref buffer[0]);
+        public static int ReadInt32(Span<byte> buffer)
+            => Unsafe.ReadUnaligned<int>(ref buffer[0]);
 
-        public static Int32 ReadInt32(Span<byte> buffer, int offset)
-            => Unsafe.ReadUnaligned<Int32>(ref buffer[offset]);
+        public static int ReadInt32(Span<byte> buffer, int offset)
+            => Unsafe.ReadUnaligned<int>(ref buffer[offset]);
 
-        public static Int32 ReadInt32(Span<byte> buffer, ref int offset)
+        public static int ReadInt32(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int32>(ref buffer[offset]);
-            offset += sizeof(Int32);
+            var value = Unsafe.ReadUnaligned<int>(ref buffer[offset]);
+            offset += sizeof(int);
             return value;
         }
 
-        public static Int32 ReadInt32BigEndian(Span<byte> buffer)
+        public static int ReadInt32BigEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<Int32>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<int>(ref buffer[0]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static Int32 ReadInt32BigEndian(Span<byte> buffer, int offset)
+        public static int ReadInt32BigEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int32>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<int>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static Int32 ReadInt32BigEndian(Span<byte> buffer, ref int offset)
+        public static int ReadInt32BigEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int32>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<int>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(Int32);
+            offset += sizeof(int);
             return value;
         }
 
-        public static Int32 ReadInt32LittleEndian(Span<byte> buffer)
+        public static int ReadInt32LittleEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<Int32>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<int>(ref buffer[0]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static Int32 ReadInt32LittleEndian(Span<byte> buffer, int offset)
+        public static int ReadInt32LittleEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int32>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<int>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static Int32 ReadInt32LittleEndian(Span<byte> buffer, ref int offset)
+        public static int ReadInt32LittleEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int32>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<int>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(Int32);
+            offset += sizeof(int);
             return value;
         }
 
@@ -260,66 +260,66 @@ namespace AcOpenServer.Binary
 
         #region UInt32
 
-        public static UInt32 ReadUInt32(Span<byte> buffer)
-            => Unsafe.ReadUnaligned<UInt32>(ref buffer[0]);
+        public static uint ReadUInt32(Span<byte> buffer)
+            => Unsafe.ReadUnaligned<uint>(ref buffer[0]);
 
-        public static UInt32 ReadUInt32(Span<byte> buffer, int offset)
-            => Unsafe.ReadUnaligned<UInt32>(ref buffer[offset]);
+        public static uint ReadUInt32(Span<byte> buffer, int offset)
+            => Unsafe.ReadUnaligned<uint>(ref buffer[offset]);
 
-        public static UInt32 ReadUInt32(Span<byte> buffer, ref int offset)
+        public static uint ReadUInt32(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt32>(ref buffer[offset]);
-            offset += sizeof(UInt32);
+            var value = Unsafe.ReadUnaligned<uint>(ref buffer[offset]);
+            offset += sizeof(uint);
             return value;
         }
 
-        public static UInt32 ReadUInt32BigEndian(Span<byte> buffer)
+        public static uint ReadUInt32BigEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<UInt32>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<uint>(ref buffer[0]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt32 ReadUInt32BigEndian(Span<byte> buffer, int offset)
+        public static uint ReadUInt32BigEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt32>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<uint>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt32 ReadUInt32BigEndian(Span<byte> buffer, ref int offset)
+        public static uint ReadUInt32BigEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt32>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<uint>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(UInt32);
+            offset += sizeof(uint);
             return value;
         }
 
-        public static UInt32 ReadUInt32LittleEndian(Span<byte> buffer)
+        public static uint ReadUInt32LittleEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<UInt32>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<uint>(ref buffer[0]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt32 ReadUInt32LittleEndian(Span<byte> buffer, int offset)
+        public static uint ReadUInt32LittleEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt32>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<uint>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt32 ReadUInt32LittleEndian(Span<byte> buffer, ref int offset)
+        public static uint ReadUInt32LittleEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt32>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<uint>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(UInt32);
+            offset += sizeof(uint);
             return value;
         }
 
@@ -327,66 +327,66 @@ namespace AcOpenServer.Binary
 
         #region Int64
 
-        public static Int64 ReadInt64(Span<byte> buffer)
-            => Unsafe.ReadUnaligned<Int64>(ref buffer[0]);
+        public static long ReadInt64(Span<byte> buffer)
+            => Unsafe.ReadUnaligned<long>(ref buffer[0]);
 
-        public static Int64 ReadInt64(Span<byte> buffer, int offset)
-            => Unsafe.ReadUnaligned<Int64>(ref buffer[offset]);
+        public static long ReadInt64(Span<byte> buffer, int offset)
+            => Unsafe.ReadUnaligned<long>(ref buffer[offset]);
 
-        public static Int64 ReadInt64(Span<byte> buffer, ref int offset)
+        public static long ReadInt64(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int64>(ref buffer[offset]);
-            offset += sizeof(Int64);
+            var value = Unsafe.ReadUnaligned<long>(ref buffer[offset]);
+            offset += sizeof(long);
             return value;
         }
 
-        public static Int64 ReadInt64BigEndian(Span<byte> buffer)
+        public static long ReadInt64BigEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<Int64>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<long>(ref buffer[0]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static Int64 ReadInt64BigEndian(Span<byte> buffer, int offset)
+        public static long ReadInt64BigEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int64>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<long>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static Int64 ReadInt64BigEndian(Span<byte> buffer, ref int offset)
+        public static long ReadInt64BigEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int64>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<long>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(Int64);
+            offset += sizeof(long);
             return value;
         }
 
-        public static Int64 ReadInt64LittleEndian(Span<byte> buffer)
+        public static long ReadInt64LittleEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<Int64>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<long>(ref buffer[0]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static Int64 ReadInt64LittleEndian(Span<byte> buffer, int offset)
+        public static long ReadInt64LittleEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int64>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<long>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static Int64 ReadInt64LittleEndian(Span<byte> buffer, ref int offset)
+        public static long ReadInt64LittleEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<Int64>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<long>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(Int64);
+            offset += sizeof(long);
             return value;
         }
 
@@ -394,66 +394,66 @@ namespace AcOpenServer.Binary
 
         #region UInt64
 
-        public static UInt64 ReadUInt64(Span<byte> buffer)
-            => Unsafe.ReadUnaligned<UInt64>(ref buffer[0]);
+        public static ulong ReadUInt64(Span<byte> buffer)
+            => Unsafe.ReadUnaligned<ulong>(ref buffer[0]);
 
-        public static UInt64 ReadUInt64(Span<byte> buffer, int offset)
-            => Unsafe.ReadUnaligned<UInt64>(ref buffer[offset]);
+        public static ulong ReadUInt64(Span<byte> buffer, int offset)
+            => Unsafe.ReadUnaligned<ulong>(ref buffer[offset]);
 
-        public static UInt64 ReadUInt64(Span<byte> buffer, ref int offset)
+        public static ulong ReadUInt64(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt64>(ref buffer[offset]);
-            offset += sizeof(UInt64);
+            var value = Unsafe.ReadUnaligned<ulong>(ref buffer[offset]);
+            offset += sizeof(ulong);
             return value;
         }
 
-        public static UInt64 ReadUInt64BigEndian(Span<byte> buffer)
+        public static ulong ReadUInt64BigEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<UInt64>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<ulong>(ref buffer[0]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt64 ReadUInt64BigEndian(Span<byte> buffer, int offset)
+        public static ulong ReadUInt64BigEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt64>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<ulong>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt64 ReadUInt64BigEndian(Span<byte> buffer, ref int offset)
+        public static ulong ReadUInt64BigEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt64>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<ulong>(ref buffer[offset]);
             if (BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(UInt64);
+            offset += sizeof(ulong);
             return value;
         }
 
-        public static UInt64 ReadUInt64LittleEndian(Span<byte> buffer)
+        public static ulong ReadUInt64LittleEndian(Span<byte> buffer)
         {
-            var value = Unsafe.ReadUnaligned<UInt64>(ref buffer[0]);
+            var value = Unsafe.ReadUnaligned<ulong>(ref buffer[0]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt64 ReadUInt64LittleEndian(Span<byte> buffer, int offset)
+        public static ulong ReadUInt64LittleEndian(Span<byte> buffer, int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt64>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<ulong>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
             return value;
         }
 
-        public static UInt64 ReadUInt64LittleEndian(Span<byte> buffer, ref int offset)
+        public static ulong ReadUInt64LittleEndian(Span<byte> buffer, ref int offset)
         {
-            var value = Unsafe.ReadUnaligned<UInt64>(ref buffer[offset]);
+            var value = Unsafe.ReadUnaligned<ulong>(ref buffer[offset]);
             if (!BitConverter.IsLittleEndian)
                 value = BinaryPrimitives.ReverseEndianness(value);
-            offset += sizeof(UInt64);
+            offset += sizeof(ulong);
             return value;
         }
 

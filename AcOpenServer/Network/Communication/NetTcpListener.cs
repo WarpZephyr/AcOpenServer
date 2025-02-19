@@ -3,20 +3,20 @@ using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Streams
+namespace AcOpenServer.Network.Communication
 {
-    public class NetListener : IDisposable
+    public class NetTcpListener : IDisposable
     {
-        private readonly Logger Log;
+        private readonly ScopeLog Log;
         private readonly TcpListener Listener;
         private readonly double ClientTimeout;
         private bool disposedValue;
 
         public bool IsDisposed => disposedValue;
 
-        public event EventHandler<NetClient>? Accepted;
+        public event EventHandler<NetTcpClient>? Accepted;
 
-        public NetListener(TcpListener listener, double clientTimeout, Logger log)
+        public NetTcpListener(TcpListener listener, double clientTimeout, ScopeLog log)
         {
             Log = log;
             Listener = listener;
@@ -31,7 +31,7 @@ namespace AcOpenServer.Network.Streams
             while (true)
             {
                 var client = await Listener.AcceptTcpClientAsync();
-                Accepted?.Invoke(this, new NetClient(client, ClientTimeout, Log));
+                Accepted?.Invoke(this, new NetTcpClient(client, ClientTimeout, Log.Pop().Push(nameof(NetTcpClient))));
             }
         }
 

@@ -25,25 +25,25 @@ namespace SVFWRequestMessage {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChhTVkZXUmVxdWVzdE1lc3NhZ2UucHJvdG8SElNWRldSZXF1ZXN0TWVzc2Fn",
-            "ZSJRChtSZXF1ZXN0UXVlcnlMb2dpblNlcnZlckluZm8SEQoJcGxheWVyX2lk",
-            "GAEgAigJEgoKAmYyGAIgASgJEhMKC2FwcF92ZXJzaW9uGAMgAigEIk8KI1Jl",
-            "cXVlc3RRdWVyeUxvZ2luU2VydmVySW5mb1Jlc3BvbnNlEgwKBHBvcnQYASAC",
-            "KA0SDAoEdW5rMhgCIAEoDRIMCgR1bmszGAMgASgNIicKEFJlcXVlc3RIYW5k",
-            "c2hha2USEwoLYWVzX2N3Y19rZXkYASACKAwiGgoYUmVxdWVzdEhhbmRzaGFr",
-            "ZVJlc3BvbnNlIlQKEEdldFNlcnZpY2VTdGF0dXMSCgoCaWQYASACKA0SEQoJ",
-            "cGxheWVyX2lkGAIgAigJEgwKBHVuazMYAyABKAkSEwoLYXBwX3ZlcnNpb24Y",
-            "BCACKAQiXAoYR2V0U2VydmljZVN0YXR1c1Jlc3BvbnNlEgoKAmlkGAEgASgN",
-            "EhEKCXBsYXllcl9pZBgCIAEoCRIMCgR1bmszGAMgASgIEhMKC2FwcF92ZXJz",
-            "aW9uGAQgASgFQgJIAw=="));
+            "ZSJTChtSZXF1ZXN0UXVlcnlMb2dpblNlcnZlckluZm8SEwoLcGxheWVyX25h",
+            "bWUYASACKAkSCgoCZjIYAiABKAkSEwoLYXBwX3ZlcnNpb24YAyACKAQiTwoj",
+            "UmVxdWVzdFF1ZXJ5TG9naW5TZXJ2ZXJJbmZvUmVzcG9uc2USDAoEcG9ydBgB",
+            "IAIoDRIMCgR1bmsyGAIgASgNEgwKBHVuazMYAyABKA0iJwoQUmVxdWVzdEhh",
+            "bmRzaGFrZRITCgthZXNfY3djX2tleRgBIAIoDCIaChhSZXF1ZXN0SGFuZHNo",
+            "YWtlUmVzcG9uc2UiVgoQR2V0U2VydmljZVN0YXR1cxIKCgJpZBgBIAIoDRIT",
+            "CgtwbGF5ZXJfbmFtZRgCIAIoCRIMCgR1bmszGAMgASgJEhMKC2FwcF92ZXJz",
+            "aW9uGAQgAigEIl4KGEdldFNlcnZpY2VTdGF0dXNSZXNwb25zZRIKCgJpZBgB",
+            "IAEoDRITCgtwbGF5ZXJfbmFtZRgCIAEoCRIMCgR1bmszGAMgASgIEhMKC2Fw",
+            "cF92ZXJzaW9uGAQgASgFQgJIAw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestQueryLoginServerInfo), global::SVFWRequestMessage.RequestQueryLoginServerInfo.Parser, new[]{ "PlayerId", "F2", "AppVersion" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestQueryLoginServerInfo), global::SVFWRequestMessage.RequestQueryLoginServerInfo.Parser, new[]{ "PlayerName", "F2", "AppVersion" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestQueryLoginServerInfoResponse), global::SVFWRequestMessage.RequestQueryLoginServerInfoResponse.Parser, new[]{ "Port", "Unk2", "Unk3" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestHandshake), global::SVFWRequestMessage.RequestHandshake.Parser, new[]{ "AesCwcKey" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestHandshakeResponse), global::SVFWRequestMessage.RequestHandshakeResponse.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatus), global::SVFWRequestMessage.GetServiceStatus.Parser, new[]{ "Id", "PlayerId", "Unk3", "AppVersion" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatusResponse), global::SVFWRequestMessage.GetServiceStatusResponse.Parser, new[]{ "Id", "PlayerId", "Unk3", "AppVersion" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatus), global::SVFWRequestMessage.GetServiceStatus.Parser, new[]{ "Id", "PlayerName", "Unk3", "AppVersion" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatusResponse), global::SVFWRequestMessage.GetServiceStatusResponse.Parser, new[]{ "Id", "PlayerName", "Unk3", "AppVersion" }, null, null, null, null)
           }));
     }
     #endregion
@@ -91,7 +91,7 @@ namespace SVFWRequestMessage {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public RequestQueryLoginServerInfo(RequestQueryLoginServerInfo other) : this() {
       _hasBits0 = other._hasBits0;
-      playerId_ = other.playerId_;
+      playerName_ = other.playerName_;
       f2_ = other.f2_;
       appVersion_ = other.appVersion_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -103,30 +103,30 @@ namespace SVFWRequestMessage {
       return new RequestQueryLoginServerInfo(this);
     }
 
-    /// <summary>Field number for the "player_id" field.</summary>
-    public const int PlayerIdFieldNumber = 1;
-    private readonly static string PlayerIdDefaultValue = "";
+    /// <summary>Field number for the "player_name" field.</summary>
+    public const int PlayerNameFieldNumber = 1;
+    private readonly static string PlayerNameDefaultValue = "";
 
-    private string playerId_;
+    private string playerName_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string PlayerId {
-      get { return playerId_ ?? PlayerIdDefaultValue; }
+    public string PlayerName {
+      get { return playerName_ ?? PlayerNameDefaultValue; }
       set {
-        playerId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        playerName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
-    /// <summary>Gets whether the "player_id" field is set</summary>
+    /// <summary>Gets whether the "player_name" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasPlayerId {
-      get { return playerId_ != null; }
+    public bool HasPlayerName {
+      get { return playerName_ != null; }
     }
-    /// <summary>Clears the value of the "player_id" field</summary>
+    /// <summary>Clears the value of the "player_name" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearPlayerId() {
-      playerId_ = null;
+    public void ClearPlayerName() {
+      playerName_ = null;
     }
 
     /// <summary>Field number for the "f2" field.</summary>
@@ -197,7 +197,7 @@ namespace SVFWRequestMessage {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (PlayerId != other.PlayerId) return false;
+      if (PlayerName != other.PlayerName) return false;
       if (F2 != other.F2) return false;
       if (AppVersion != other.AppVersion) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -207,7 +207,7 @@ namespace SVFWRequestMessage {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasPlayerId) hash ^= PlayerId.GetHashCode();
+      if (HasPlayerName) hash ^= PlayerName.GetHashCode();
       if (HasF2) hash ^= F2.GetHashCode();
       if (HasAppVersion) hash ^= AppVersion.GetHashCode();
       if (_unknownFields != null) {
@@ -228,9 +228,9 @@ namespace SVFWRequestMessage {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (HasPlayerId) {
+      if (HasPlayerName) {
         output.WriteRawTag(10);
-        output.WriteString(PlayerId);
+        output.WriteString(PlayerName);
       }
       if (HasF2) {
         output.WriteRawTag(18);
@@ -250,9 +250,9 @@ namespace SVFWRequestMessage {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (HasPlayerId) {
+      if (HasPlayerName) {
         output.WriteRawTag(10);
-        output.WriteString(PlayerId);
+        output.WriteString(PlayerName);
       }
       if (HasF2) {
         output.WriteRawTag(18);
@@ -272,8 +272,8 @@ namespace SVFWRequestMessage {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (HasPlayerId) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
+      if (HasPlayerName) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerName);
       }
       if (HasF2) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(F2);
@@ -293,8 +293,8 @@ namespace SVFWRequestMessage {
       if (other == null) {
         return;
       }
-      if (other.HasPlayerId) {
-        PlayerId = other.PlayerId;
+      if (other.HasPlayerName) {
+        PlayerName = other.PlayerName;
       }
       if (other.HasF2) {
         F2 = other.F2;
@@ -322,7 +322,7 @@ namespace SVFWRequestMessage {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            PlayerId = input.ReadString();
+            PlayerName = input.ReadString();
             break;
           }
           case 18: {
@@ -353,7 +353,7 @@ namespace SVFWRequestMessage {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            PlayerId = input.ReadString();
+            PlayerName = input.ReadString();
             break;
           }
           case 18: {
@@ -1118,7 +1118,7 @@ namespace SVFWRequestMessage {
     public GetServiceStatus(GetServiceStatus other) : this() {
       _hasBits0 = other._hasBits0;
       id_ = other.id_;
-      playerId_ = other.playerId_;
+      playerName_ = other.playerName_;
       unk3_ = other.unk3_;
       appVersion_ = other.appVersion_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1157,30 +1157,30 @@ namespace SVFWRequestMessage {
       _hasBits0 &= ~1;
     }
 
-    /// <summary>Field number for the "player_id" field.</summary>
-    public const int PlayerIdFieldNumber = 2;
-    private readonly static string PlayerIdDefaultValue = "";
+    /// <summary>Field number for the "player_name" field.</summary>
+    public const int PlayerNameFieldNumber = 2;
+    private readonly static string PlayerNameDefaultValue = "";
 
-    private string playerId_;
+    private string playerName_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string PlayerId {
-      get { return playerId_ ?? PlayerIdDefaultValue; }
+    public string PlayerName {
+      get { return playerName_ ?? PlayerNameDefaultValue; }
       set {
-        playerId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        playerName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
-    /// <summary>Gets whether the "player_id" field is set</summary>
+    /// <summary>Gets whether the "player_name" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasPlayerId {
-      get { return playerId_ != null; }
+    public bool HasPlayerName {
+      get { return playerName_ != null; }
     }
-    /// <summary>Clears the value of the "player_id" field</summary>
+    /// <summary>Clears the value of the "player_name" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearPlayerId() {
-      playerId_ = null;
+    public void ClearPlayerName() {
+      playerName_ = null;
     }
 
     /// <summary>Field number for the "unk3" field.</summary>
@@ -1252,7 +1252,7 @@ namespace SVFWRequestMessage {
         return true;
       }
       if (Id != other.Id) return false;
-      if (PlayerId != other.PlayerId) return false;
+      if (PlayerName != other.PlayerName) return false;
       if (Unk3 != other.Unk3) return false;
       if (AppVersion != other.AppVersion) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -1263,7 +1263,7 @@ namespace SVFWRequestMessage {
     public override int GetHashCode() {
       int hash = 1;
       if (HasId) hash ^= Id.GetHashCode();
-      if (HasPlayerId) hash ^= PlayerId.GetHashCode();
+      if (HasPlayerName) hash ^= PlayerName.GetHashCode();
       if (HasUnk3) hash ^= Unk3.GetHashCode();
       if (HasAppVersion) hash ^= AppVersion.GetHashCode();
       if (_unknownFields != null) {
@@ -1288,9 +1288,9 @@ namespace SVFWRequestMessage {
         output.WriteRawTag(8);
         output.WriteUInt32(Id);
       }
-      if (HasPlayerId) {
+      if (HasPlayerName) {
         output.WriteRawTag(18);
-        output.WriteString(PlayerId);
+        output.WriteString(PlayerName);
       }
       if (HasUnk3) {
         output.WriteRawTag(26);
@@ -1314,9 +1314,9 @@ namespace SVFWRequestMessage {
         output.WriteRawTag(8);
         output.WriteUInt32(Id);
       }
-      if (HasPlayerId) {
+      if (HasPlayerName) {
         output.WriteRawTag(18);
-        output.WriteString(PlayerId);
+        output.WriteString(PlayerName);
       }
       if (HasUnk3) {
         output.WriteRawTag(26);
@@ -1339,8 +1339,8 @@ namespace SVFWRequestMessage {
       if (HasId) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Id);
       }
-      if (HasPlayerId) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
+      if (HasPlayerName) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerName);
       }
       if (HasUnk3) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Unk3);
@@ -1363,8 +1363,8 @@ namespace SVFWRequestMessage {
       if (other.HasId) {
         Id = other.Id;
       }
-      if (other.HasPlayerId) {
-        PlayerId = other.PlayerId;
+      if (other.HasPlayerName) {
+        PlayerName = other.PlayerName;
       }
       if (other.HasUnk3) {
         Unk3 = other.Unk3;
@@ -1396,7 +1396,7 @@ namespace SVFWRequestMessage {
             break;
           }
           case 18: {
-            PlayerId = input.ReadString();
+            PlayerName = input.ReadString();
             break;
           }
           case 26: {
@@ -1431,7 +1431,7 @@ namespace SVFWRequestMessage {
             break;
           }
           case 18: {
-            PlayerId = input.ReadString();
+            PlayerName = input.ReadString();
             break;
           }
           case 26: {
@@ -1493,7 +1493,7 @@ namespace SVFWRequestMessage {
     public GetServiceStatusResponse(GetServiceStatusResponse other) : this() {
       _hasBits0 = other._hasBits0;
       id_ = other.id_;
-      playerId_ = other.playerId_;
+      playerName_ = other.playerName_;
       unk3_ = other.unk3_;
       appVersion_ = other.appVersion_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1532,30 +1532,30 @@ namespace SVFWRequestMessage {
       _hasBits0 &= ~1;
     }
 
-    /// <summary>Field number for the "player_id" field.</summary>
-    public const int PlayerIdFieldNumber = 2;
-    private readonly static string PlayerIdDefaultValue = "";
+    /// <summary>Field number for the "player_name" field.</summary>
+    public const int PlayerNameFieldNumber = 2;
+    private readonly static string PlayerNameDefaultValue = "";
 
-    private string playerId_;
+    private string playerName_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string PlayerId {
-      get { return playerId_ ?? PlayerIdDefaultValue; }
+    public string PlayerName {
+      get { return playerName_ ?? PlayerNameDefaultValue; }
       set {
-        playerId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        playerName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
-    /// <summary>Gets whether the "player_id" field is set</summary>
+    /// <summary>Gets whether the "player_name" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasPlayerId {
-      get { return playerId_ != null; }
+    public bool HasPlayerName {
+      get { return playerName_ != null; }
     }
-    /// <summary>Clears the value of the "player_id" field</summary>
+    /// <summary>Clears the value of the "player_name" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearPlayerId() {
-      playerId_ = null;
+    public void ClearPlayerName() {
+      playerName_ = null;
     }
 
     /// <summary>Field number for the "unk3" field.</summary>
@@ -1628,7 +1628,7 @@ namespace SVFWRequestMessage {
         return true;
       }
       if (Id != other.Id) return false;
-      if (PlayerId != other.PlayerId) return false;
+      if (PlayerName != other.PlayerName) return false;
       if (Unk3 != other.Unk3) return false;
       if (AppVersion != other.AppVersion) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -1639,7 +1639,7 @@ namespace SVFWRequestMessage {
     public override int GetHashCode() {
       int hash = 1;
       if (HasId) hash ^= Id.GetHashCode();
-      if (HasPlayerId) hash ^= PlayerId.GetHashCode();
+      if (HasPlayerName) hash ^= PlayerName.GetHashCode();
       if (HasUnk3) hash ^= Unk3.GetHashCode();
       if (HasAppVersion) hash ^= AppVersion.GetHashCode();
       if (_unknownFields != null) {
@@ -1664,9 +1664,9 @@ namespace SVFWRequestMessage {
         output.WriteRawTag(8);
         output.WriteUInt32(Id);
       }
-      if (HasPlayerId) {
+      if (HasPlayerName) {
         output.WriteRawTag(18);
-        output.WriteString(PlayerId);
+        output.WriteString(PlayerName);
       }
       if (HasUnk3) {
         output.WriteRawTag(24);
@@ -1690,9 +1690,9 @@ namespace SVFWRequestMessage {
         output.WriteRawTag(8);
         output.WriteUInt32(Id);
       }
-      if (HasPlayerId) {
+      if (HasPlayerName) {
         output.WriteRawTag(18);
-        output.WriteString(PlayerId);
+        output.WriteString(PlayerName);
       }
       if (HasUnk3) {
         output.WriteRawTag(24);
@@ -1715,8 +1715,8 @@ namespace SVFWRequestMessage {
       if (HasId) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Id);
       }
-      if (HasPlayerId) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
+      if (HasPlayerName) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerName);
       }
       if (HasUnk3) {
         size += 1 + 1;
@@ -1739,8 +1739,8 @@ namespace SVFWRequestMessage {
       if (other.HasId) {
         Id = other.Id;
       }
-      if (other.HasPlayerId) {
-        PlayerId = other.PlayerId;
+      if (other.HasPlayerName) {
+        PlayerName = other.PlayerName;
       }
       if (other.HasUnk3) {
         Unk3 = other.Unk3;
@@ -1772,7 +1772,7 @@ namespace SVFWRequestMessage {
             break;
           }
           case 18: {
-            PlayerId = input.ReadString();
+            PlayerName = input.ReadString();
             break;
           }
           case 24: {
@@ -1807,7 +1807,7 @@ namespace SVFWRequestMessage {
             break;
           }
           case 18: {
-            PlayerId = input.ReadString();
+            PlayerName = input.ReadString();
             break;
           }
           case 24: {

@@ -1,4 +1,4 @@
-﻿namespace AcOpenServer.Network.Clients
+﻿namespace AcOpenServer.Network.Services.Authentication
 {
     /// <summary>
     /// The state of a client being authenticated.
@@ -26,8 +26,13 @@
         WaitingForTicket,
 
         /// <summary>
-        /// Client authentication is complete.
+        /// Client authentication completed successfully.
         /// </summary>
-        Complete
+        Complete,
+
+        /// <summary>
+        /// Client authentication failed.
+        /// </summary>
+        Disconnected
     }
 }
