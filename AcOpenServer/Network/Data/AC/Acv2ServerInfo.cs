@@ -1,5 +1,4 @@
 ﻿using System.Buffers.Binary;
-using System.Diagnostics;
 
 namespace AcOpenServer.Network.Data.AC
 {
@@ -8,7 +7,7 @@ namespace AcOpenServer.Network.Data.AC
         public ulong AuthToken;
         public uint Address;
         public ushort GamePort;
-        readonly ushort Padding;
+        private ushort Padding;
         public uint SendBufferSize;
         public uint ReceiveBufferSize;
         public uint Unk18;
@@ -25,7 +24,6 @@ namespace AcOpenServer.Network.Data.AC
             AuthToken = BinaryPrimitives.ReverseEndianness(AuthToken);
             Address = BinaryPrimitives.ReverseEndianness(Address);
             GamePort = BinaryPrimitives.ReverseEndianness(GamePort);
-            Debug.Assert(Padding == 0);
             SendBufferSize = BinaryPrimitives.ReverseEndianness(SendBufferSize);
             ReceiveBufferSize = BinaryPrimitives.ReverseEndianness(ReceiveBufferSize);
             Unk18 = BinaryPrimitives.ReverseEndianness(Unk18);
