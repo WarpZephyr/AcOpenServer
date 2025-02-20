@@ -1,6 +1,6 @@
 ﻿using System.Buffers.Binary;
 
-namespace AcOpenServer.Network.Data.AC
+namespace AcOpenServer.Network.Data.SVFW
 {
     public struct SVFWPacketHeader
     {

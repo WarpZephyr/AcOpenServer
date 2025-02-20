@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using AcOpenServer.Network.Data.SVFW;
 
 namespace AcOpenServer.Network.Services.Login
 {

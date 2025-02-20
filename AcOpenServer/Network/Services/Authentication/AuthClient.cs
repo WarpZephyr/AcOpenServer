@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using AcOpenServer.Network.Data.SVFW;
 
 namespace AcOpenServer.Network.Services.Authentication
 {
@@ -260,7 +261,7 @@ namespace AcOpenServer.Network.Services.Authentication
             }
 
             // Build message
-            var serverInfo = new Acv2ServerInfo
+            var serverInfo = new AcvServerInfo
             {
                 AuthToken = 0,
                 Address = gameServerIP,

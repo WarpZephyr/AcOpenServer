@@ -2,7 +2,7 @@
 
 namespace AcOpenServer.Network.Data.AC
 {
-    public struct Acv2ServerInfo
+    public struct AcvServerInfo
     {
         public ulong AuthToken;
         public uint Address;

@@ -1,0 +1,73 @@
+﻿namespace AcOpenServer.Network.Data.FSDP
+{
+    /// <summary>
+    /// The different opcodes used by FSDP for communication.
+    /// </summary>
+    public enum FSDPOpcode : byte
+    {
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        UNKNOWN = 0x00,
+
+        /// <summary>
+        /// Used to establish connection and sync sequence numbers.
+        /// </summary>
+        SYN = 0x02,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        RACK = 0x03,
+
+        /// <summary>
+        /// Data fragment packet.
+        /// </summary>
+        DAT = 0x04,
+
+        /// <summary>
+        /// Heartbeat packet.
+        /// </summary>
+        HBT = 0x05,
+
+        /// <summary>
+        /// Connection termination.
+        /// </summary>
+        FIN = 0x06,
+
+        /// <summary>
+        /// Reset the connection.
+        /// </summary>
+        RST = 0x07,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        PT_DAT_FRAG = 0x08,
+
+        /// <summary>
+        /// Acknowledges the highest packet in the sequence that has been recieved.
+        /// </summary>
+        ACK = 0x31,
+
+        /// <summary>
+        /// Acknowledgement of SYN packet along with remote machines owning sequence number information.
+        /// </summary>
+        SYN_ACK = 0x32,
+
+        /// <summary>
+        /// Acknowledges data packet and also contains a payload. This basically seems to be a "reply" opcode.
+        /// </summary>
+        DAT_ACK = 0x34,
+
+        /// <summary>
+        /// Acknowledges connection termination.
+        /// </summary>
+        FIN_ACK = 0x36,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        PT_DAT_FRAG_ACK = 0x38
+    }
+}

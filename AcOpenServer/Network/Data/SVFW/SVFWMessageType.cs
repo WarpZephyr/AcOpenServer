@@ -1,4 +1,4 @@
-﻿namespace AcOpenServer.Network.Data.AC
+﻿namespace AcOpenServer.Network.Data.SVFW
 {
     public enum SVFWMessageType
     {
