@@ -32,9 +32,11 @@ namespace SVFWRequestMessage {
             "bmRzaGFrZRITCgthZXNfY3djX2tleRgBIAIoDCIaChhSZXF1ZXN0SGFuZHNo",
             "YWtlUmVzcG9uc2UiVgoQR2V0U2VydmljZVN0YXR1cxIKCgJpZBgBIAIoDRIT",
             "CgtwbGF5ZXJfbmFtZRgCIAIoCRIMCgR1bmszGAMgASgJEhMKC2FwcF92ZXJz",
-            "aW9uGAQgAigEIl4KGEdldFNlcnZpY2VTdGF0dXNSZXNwb25zZRIKCgJpZBgB",
-            "IAEoDRITCgtwbGF5ZXJfbmFtZRgCIAEoCRIMCgR1bmszGAMgASgIEhMKC2Fw",
-            "cF92ZXJzaW9uGAQgASgFQgJIAw=="));
+            "aW9uGAQgASgEIl4KGEdldFNlcnZpY2VTdGF0dXNSZXNwb25zZRIKCgJpZBgB",
+            "IAIoDRITCgtwbGF5ZXJfbmFtZRgCIAIoCRIMCgR1bmszGAMgASgIEhMKC2Fw",
+            "cF92ZXJzaW9uGAQgASgFIlEKEFdhaXRGb3JVc2VyTG9naW4SEwoLcGxheWVy",
+            "X25hbWUYASACKAkSDAoEdW5rMhgCIAIoDRIMCgR1bmszGAMgAigNEgwKBHVu",
+            "azQYBCACKAhCAkgD"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -43,7 +45,8 @@ namespace SVFWRequestMessage {
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestHandshake), global::SVFWRequestMessage.RequestHandshake.Parser, new[]{ "AesCwcKey" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.RequestHandshakeResponse), global::SVFWRequestMessage.RequestHandshakeResponse.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatus), global::SVFWRequestMessage.GetServiceStatus.Parser, new[]{ "Id", "PlayerName", "Unk3", "AppVersion" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatusResponse), global::SVFWRequestMessage.GetServiceStatusResponse.Parser, new[]{ "Id", "PlayerName", "Unk3", "AppVersion" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.GetServiceStatusResponse), global::SVFWRequestMessage.GetServiceStatusResponse.Parser, new[]{ "Id", "PlayerName", "Unk3", "AppVersion" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::SVFWRequestMessage.WaitForUserLogin), global::SVFWRequestMessage.WaitForUserLogin.Parser, new[]{ "PlayerName", "Unk2", "Unk3", "Unk4" }, null, null, null, null)
           }));
     }
     #endregion
@@ -1077,7 +1080,7 @@ namespace SVFWRequestMessage {
   }
 
   /// <summary>
-  /// Sent after handshake, all seemingly constant data (apart from the player_id). 
+  /// Sent after handshake, all seemingly constant data (apart from the player_name). 
   /// Presumably used for ensure we are connecting to a compatible server?
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -1451,7 +1454,7 @@ namespace SVFWRequestMessage {
 
   /// <summary>
   /// Response to GetServiceStatus, contains identical data to what is sent
-  /// with the exception of a blank player_id. Presumably if we connected to a dev server
+  /// with the exception of a blank player_name. Presumably if we connected to a dev server
   /// or something we would get different responses.
   /// If we are on an older version of the game an empty response is sent back for this.
   /// </summary>
@@ -1816,6 +1819,385 @@ namespace SVFWRequestMessage {
           }
           case 32: {
             AppVersion = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class WaitForUserLogin : pb::IMessage<WaitForUserLogin>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<WaitForUserLogin> _parser = new pb::MessageParser<WaitForUserLogin>(() => new WaitForUserLogin());
+    private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<WaitForUserLogin> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::SVFWRequestMessage.SVFWRequestMessageReflection.Descriptor.MessageTypes[6]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public WaitForUserLogin() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public WaitForUserLogin(WaitForUserLogin other) : this() {
+      _hasBits0 = other._hasBits0;
+      playerName_ = other.playerName_;
+      unk2_ = other.unk2_;
+      unk3_ = other.unk3_;
+      unk4_ = other.unk4_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public WaitForUserLogin Clone() {
+      return new WaitForUserLogin(this);
+    }
+
+    /// <summary>Field number for the "player_name" field.</summary>
+    public const int PlayerNameFieldNumber = 1;
+    private readonly static string PlayerNameDefaultValue = "";
+
+    private string playerName_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string PlayerName {
+      get { return playerName_ ?? PlayerNameDefaultValue; }
+      set {
+        playerName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+    /// <summary>Gets whether the "player_name" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasPlayerName {
+      get { return playerName_ != null; }
+    }
+    /// <summary>Clears the value of the "player_name" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearPlayerName() {
+      playerName_ = null;
+    }
+
+    /// <summary>Field number for the "unk2" field.</summary>
+    public const int Unk2FieldNumber = 2;
+    private readonly static uint Unk2DefaultValue = 0;
+
+    private uint unk2_;
+    /// <summary>
+    /// 2
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Unk2 {
+      get { if ((_hasBits0 & 1) != 0) { return unk2_; } else { return Unk2DefaultValue; } }
+      set {
+        _hasBits0 |= 1;
+        unk2_ = value;
+      }
+    }
+    /// <summary>Gets whether the "unk2" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasUnk2 {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "unk2" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearUnk2() {
+      _hasBits0 &= ~1;
+    }
+
+    /// <summary>Field number for the "unk3" field.</summary>
+    public const int Unk3FieldNumber = 3;
+    private readonly static uint Unk3DefaultValue = 0;
+
+    private uint unk3_;
+    /// <summary>
+    /// 1
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Unk3 {
+      get { if ((_hasBits0 & 2) != 0) { return unk3_; } else { return Unk3DefaultValue; } }
+      set {
+        _hasBits0 |= 2;
+        unk3_ = value;
+      }
+    }
+    /// <summary>Gets whether the "unk3" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasUnk3 {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "unk3" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearUnk3() {
+      _hasBits0 &= ~2;
+    }
+
+    /// <summary>Field number for the "unk4" field.</summary>
+    public const int Unk4FieldNumber = 4;
+    private readonly static bool Unk4DefaultValue = false;
+
+    private bool unk4_;
+    /// <summary>
+    /// false
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Unk4 {
+      get { if ((_hasBits0 & 4) != 0) { return unk4_; } else { return Unk4DefaultValue; } }
+      set {
+        _hasBits0 |= 4;
+        unk4_ = value;
+      }
+    }
+    /// <summary>Gets whether the "unk4" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasUnk4 {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "unk4" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearUnk4() {
+      _hasBits0 &= ~4;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as WaitForUserLogin);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(WaitForUserLogin other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (PlayerName != other.PlayerName) return false;
+      if (Unk2 != other.Unk2) return false;
+      if (Unk3 != other.Unk3) return false;
+      if (Unk4 != other.Unk4) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (HasPlayerName) hash ^= PlayerName.GetHashCode();
+      if (HasUnk2) hash ^= Unk2.GetHashCode();
+      if (HasUnk3) hash ^= Unk3.GetHashCode();
+      if (HasUnk4) hash ^= Unk4.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasPlayerName) {
+        output.WriteRawTag(10);
+        output.WriteString(PlayerName);
+      }
+      if (HasUnk2) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Unk2);
+      }
+      if (HasUnk3) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Unk3);
+      }
+      if (HasUnk4) {
+        output.WriteRawTag(32);
+        output.WriteBool(Unk4);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasPlayerName) {
+        output.WriteRawTag(10);
+        output.WriteString(PlayerName);
+      }
+      if (HasUnk2) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Unk2);
+      }
+      if (HasUnk3) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Unk3);
+      }
+      if (HasUnk4) {
+        output.WriteRawTag(32);
+        output.WriteBool(Unk4);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (HasPlayerName) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerName);
+      }
+      if (HasUnk2) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Unk2);
+      }
+      if (HasUnk3) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Unk3);
+      }
+      if (HasUnk4) {
+        size += 1 + 1;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(WaitForUserLogin other) {
+      if (other == null) {
+        return;
+      }
+      if (other.HasPlayerName) {
+        PlayerName = other.PlayerName;
+      }
+      if (other.HasUnk2) {
+        Unk2 = other.Unk2;
+      }
+      if (other.HasUnk3) {
+        Unk3 = other.Unk3;
+      }
+      if (other.HasUnk4) {
+        Unk4 = other.Unk4;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            PlayerName = input.ReadString();
+            break;
+          }
+          case 16: {
+            Unk2 = input.ReadUInt32();
+            break;
+          }
+          case 24: {
+            Unk3 = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            Unk4 = input.ReadBool();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            PlayerName = input.ReadString();
+            break;
+          }
+          case 16: {
+            Unk2 = input.ReadUInt32();
+            break;
+          }
+          case 24: {
+            Unk3 = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            Unk4 = input.ReadBool();
             break;
           }
         }

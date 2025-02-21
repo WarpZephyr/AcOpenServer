@@ -1,20 +1,19 @@
 ﻿using AcOpenServer.Binary;
 using AcOpenServer.Crypto;
 using AcOpenServer.Logging;
+using AcOpenServer.Network.Communication.SVFW;
 using AcOpenServer.Network.Data.AC;
 using AcOpenServer.Network.Data.RPCN;
-using AcOpenServer.Network.Exceptions;
-using AcOpenServer.Network.Communication;
+using AcOpenServer.Network.Data.SVFW;
 using AcOpenServer.Utilities;
 using Google.Protobuf;
 using SVFWRequestMessage;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
 using System.Diagnostics;
-using AcOpenServer.Network.Data.SVFW;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Services.Authentication
 {
@@ -261,7 +260,7 @@ namespace AcOpenServer.Network.Services.Authentication
             }
 
             // Build message
-            var serverInfo = new AcvServerInfo
+            var serverInfo = new ConnectGameServerPortIdResponse
             {
                 AuthToken = 0,
                 Address = gameServerIP,

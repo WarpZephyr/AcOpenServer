@@ -1,9 +1,9 @@
 ﻿using AcOpenServer.Crypto;
-using AcOpenServer.Network.Communication;
+using AcOpenServer.Network.Communication.Tcp;
 using System;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Communication
+namespace AcOpenServer.Network.Communication.SVFW
 {
     public class SVFWMessageListener : IDisposable
     {

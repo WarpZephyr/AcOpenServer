@@ -2,7 +2,7 @@
 
 namespace AcOpenServer.Network.Data.FSDP
 {
-    public struct FSDPFragmentHeader
+    public struct FsdpFragmentHeader
     {
         public ushort PacketCounter;
         public byte CompressFlag;

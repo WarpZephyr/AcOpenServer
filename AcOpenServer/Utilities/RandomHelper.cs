@@ -20,5 +20,9 @@ namespace AcOpenServer.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void NextBytes(Span<byte> buffer)
             => GetRandom().NextBytes(buffer);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int NextInt32()
+            => GetRandom().Next();
     }
 }

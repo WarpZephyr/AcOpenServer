@@ -1,5 +1,5 @@
 ﻿using AcOpenServer.Binary;
-using AcOpenServer.Network.Exceptions;
+using AcOpenServer.Exceptions;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;

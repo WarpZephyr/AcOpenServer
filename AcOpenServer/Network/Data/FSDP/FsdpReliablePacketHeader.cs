@@ -1,12 +1,19 @@
 ﻿namespace AcOpenServer.Network.Data.FSDP
 {
-    public struct FSDPPacketHeader
+    public struct FsdpReliablePacketHeader
     {
+        public const int Length = sizeof(ushort)
+            + sizeof(byte)
+            + sizeof(byte)
+            + sizeof(byte)
+            + sizeof(FsdpOpcode)
+            + sizeof(byte);
+
         public ushort Magic;
         private byte AckCounter1;
         private byte AckCounter2;
         private byte AckCounter3;
-        public FSDPOpcode Opcode;
+        public FsdpOpcode Opcode;
         public byte Unk06;
 
         public int LocalAckCounter
@@ -37,6 +44,19 @@
             AckCounter1 = (byte)(local & 0xFF);
             AckCounter2 = (byte)((upper_nibble << 4) | (lower_nibble));
             AckCounter3 = (byte)(remote & 0xFF);
+        }
+
+        public static FsdpReliablePacketHeader CreateDefault()
+        {
+            return new FsdpReliablePacketHeader()
+            {
+                Magic = 0x02F5,
+                AckCounter1 = 0,
+                AckCounter2 = 0,
+                AckCounter3 = 0,
+                Opcode = FsdpOpcode.UNKNOWN,
+                Unk06 = 0xFF
+            };
         }
     }
 }

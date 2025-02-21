@@ -3,7 +3,7 @@ using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Communication
+namespace AcOpenServer.Network.Communication.Tcp
 {
     public class NetTcpListener : IDisposable
     {

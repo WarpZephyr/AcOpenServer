@@ -1,14 +1,14 @@
 ﻿using AcOpenServer.Binary;
-using AcOpenServer.Network.Communication;
+using AcOpenServer.Exceptions;
+using AcOpenServer.Network.Communication.Tcp;
 using AcOpenServer.Network.Data.SVFW;
-using AcOpenServer.Network.Exceptions;
 using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Communication
+namespace AcOpenServer.Network.Communication.SVFW
 {
     public class SVFWPacketClient : IDisposable
     {

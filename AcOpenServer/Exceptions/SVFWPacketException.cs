@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AcOpenServer.Network.Exceptions
+namespace AcOpenServer.Exceptions
 {
     public class SVFWPacketException : Exception
     {

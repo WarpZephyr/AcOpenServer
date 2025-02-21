@@ -1,14 +1,14 @@
 ﻿using AcOpenServer.Binary;
 using AcOpenServer.Crypto;
+using AcOpenServer.Exceptions;
 using AcOpenServer.Network.Data.SVFW;
-using AcOpenServer.Network.Exceptions;
 using Google.Protobuf;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Communication
+namespace AcOpenServer.Network.Communication.SVFW
 {
     public class SVFWMessageClient : IDisposable
     {

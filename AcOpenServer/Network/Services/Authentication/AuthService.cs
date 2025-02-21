@@ -1,5 +1,5 @@
 ﻿using AcOpenServer.Logging;
-using AcOpenServer.Network.Communication;
+using AcOpenServer.Network.Communication.SVFW;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

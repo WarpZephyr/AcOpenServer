@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AcOpenServer.Network.Communication
+namespace AcOpenServer.Network.Communication.Tcp
 {
     public class NetTcpClient : IDisposable
     {
@@ -15,6 +15,7 @@ namespace AcOpenServer.Network.Communication
         private readonly double Timeout;
         private readonly ScopeLog Log;
         private readonly NetworkStream Stream;
+        private readonly CancellationTokenSource CancellationTokenSource;
         private readonly bool IsPrivateClient;
         private readonly string Name;
         private bool disposedValue;
@@ -31,6 +32,15 @@ namespace AcOpenServer.Network.Communication
             Timeout = timeout;
             Log = log;
             Stream = client.GetStream();
+            if (Timeout > 0d)
+            {
+                CancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(Timeout));
+            }
+            else
+            {
+                CancellationTokenSource = new CancellationTokenSource();
+            }
+
             IsPrivateClient = IPAddressHelper.IsPrivateRemoteTcpClient(client);
 
             EndPoint remoteEndPoint = client.Client.RemoteEndPoint ?? throw new Exception("Remote end point was null on a remote connection.");
@@ -39,40 +49,14 @@ namespace AcOpenServer.Network.Communication
 
         #region IO
 
+        public void Cancel()
+            => CancellationTokenSource.Cancel();
+
         public async Task ReceiveAsync()
         {
-            if (Timeout > 0d)
+            try
             {
-                try
-                {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(Timeout));
-                    while (true)
-                    {
-                        if (!Client.Connected)
-                        {
-                            Log.Warn($"Client {Name} has disconnected.");
-                            Client.Close();
-                            break;
-                        }
-
-                        if (Buffer != null)
-                        {
-                            int received = await Stream.ReadAsync(Buffer, cts.Token);
-                            if (received > 0)
-                            {
-                                Received?.Invoke(this, received);
-                            }
-                        }
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    Log.Warn($"Client {Name} has timed out.");
-                    Client.Close();
-                }
-            }
-            else
-            {
+                var token = CancellationTokenSource.Token;
                 while (true)
                 {
                     if (!Client.Connected)
@@ -84,13 +68,18 @@ namespace AcOpenServer.Network.Communication
 
                     if (Buffer != null)
                     {
-                        int received = await Stream.ReadAsync(Buffer);
+                        int received = await Stream.ReadAsync(Buffer, token);
                         if (received > 0)
                         {
                             Received?.Invoke(this, received);
                         }
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Warn($"Client {Name} has timed out or the connection was cancelled.");
+                Client.Close();
             }
         }
 
@@ -146,6 +135,7 @@ namespace AcOpenServer.Network.Communication
             {
                 if (disposing)
                 {
+                    CancellationTokenSource.Dispose();
                     Client.Dispose();
                 }
 

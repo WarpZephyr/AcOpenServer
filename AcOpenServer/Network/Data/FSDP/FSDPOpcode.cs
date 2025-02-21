@@ -3,7 +3,7 @@
     /// <summary>
     /// The different opcodes used by FSDP for communication.
     /// </summary>
-    public enum FSDPOpcode : byte
+    public enum FsdpOpcode : byte
     {
         /// <summary>
         /// Unknown.

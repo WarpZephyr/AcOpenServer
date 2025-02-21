@@ -1,7 +1,10 @@
 ﻿using AcOpenServer.Crypto;
 using AcOpenServer.Logging;
+using AcOpenServer.Network.Communication.SVFW;
+using AcOpenServer.Network.Communication.Tcp;
 using AcOpenServer.Network.Data.AC;
-using AcOpenServer.Network.Communication;
+using AcOpenServer.Network.Services.Authentication;
+using AcOpenServer.Network.Services.Login;
 using AcOpenServer.Utilities;
 using OpenSSL.Crypto;
 using System;
@@ -10,10 +13,6 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using AcOpenServer.Network.Services.Login;
-using AcOpenServer.Network.Services.Authentication;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace AcOpenServer.Network.Servers
 {
