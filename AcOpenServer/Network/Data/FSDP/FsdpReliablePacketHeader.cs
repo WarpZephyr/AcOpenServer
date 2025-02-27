@@ -9,31 +9,31 @@
             + sizeof(FsdpOpcode)
             + sizeof(byte);
 
-        public ushort Magic;
-        private byte AckCounter1;
-        private byte AckCounter2;
-        private byte AckCounter3;
+        private ushort Magic;
+        private byte Ack1;
+        private byte Ack2;
+        private byte Ack3;
         public FsdpOpcode Opcode;
         public byte Unk06;
 
-        public int LocalAckCounter
+        public int LocalAck
         {
             readonly get
             {
-                uint upper_nibble = ((uint)AckCounter2 & 0xf0) >> 4;
-                return (int)(AckCounter1 | (upper_nibble << 8));
+                uint upper_nibble = ((uint)Ack2 & 0xf0) >> 4;
+                return (int)(Ack1 | (upper_nibble << 8));
             }
-            set => SetAckCounters(value, RemoteAckCounter);
+            set => SetAckCounters(value, RemoteAck);
         }
 
-        public int RemoteAckCounter
+        public int RemoteAck
         {
             readonly get
             {
-                uint lower_nibble = ((uint)AckCounter2 & 0x0f);
-                return (int)(AckCounter3 | (lower_nibble << 8));
+                uint lower_nibble = ((uint)Ack2 & 0x0f);
+                return (int)(Ack3 | (lower_nibble << 8));
             }
-            set => SetAckCounters(LocalAckCounter, value);
+            set => SetAckCounters(LocalAck, value);
         }
 
         private void SetAckCounters(int local, int remote)
@@ -41,19 +41,23 @@
             uint upper_nibble = (uint)((local >> 8) & 0xF);
             uint lower_nibble = (uint)((remote >> 8) & 0xF);
 
-            AckCounter1 = (byte)(local & 0xFF);
-            AckCounter2 = (byte)((upper_nibble << 4) | (lower_nibble));
-            AckCounter3 = (byte)(remote & 0xFF);
+            Ack1 = (byte)(local & 0xFF);
+            Ack2 = (byte)((upper_nibble << 4) | (lower_nibble));
+            Ack3 = (byte)(remote & 0xFF);
+        }
+
+        public FsdpReliablePacketHeader()
+        {
+            Magic = 0x02F5;
         }
 
         public static FsdpReliablePacketHeader CreateDefault()
         {
             return new FsdpReliablePacketHeader()
             {
-                Magic = 0x02F5,
-                AckCounter1 = 0,
-                AckCounter2 = 0,
-                AckCounter3 = 0,
+                Ack1 = 0,
+                Ack2 = 0,
+                Ack3 = 0,
                 Opcode = FsdpOpcode.UNKNOWN,
                 Unk06 = 0xFF
             };

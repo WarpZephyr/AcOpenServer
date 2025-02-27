@@ -48,26 +48,26 @@
         /// <summary>
         /// Acknowledges the highest packet in the sequence that has been recieved.
         /// </summary>
-        ACK = 0x31,
+        ACK = 0x01 | 0x30,
 
         /// <summary>
         /// Acknowledgement of SYN packet along with remote machines owning sequence number information.
         /// </summary>
-        SYN_ACK = 0x32,
+        SYN_ACK = SYN | 0x30,
 
         /// <summary>
         /// Acknowledges data packet and also contains a payload. This basically seems to be a "reply" opcode.
         /// </summary>
-        DAT_ACK = 0x34,
+        DAT_ACK = DAT | 0x30,
 
         /// <summary>
         /// Acknowledges connection termination.
         /// </summary>
-        FIN_ACK = 0x36,
+        FIN_ACK = FIN | 0x30,
 
         /// <summary>
         /// Unknown.
         /// </summary>
-        PT_DAT_FRAG_ACK = 0x38
+        PT_DAT_FRAG_ACK = PT_DAT_FRAG | 0x30
     }
 }

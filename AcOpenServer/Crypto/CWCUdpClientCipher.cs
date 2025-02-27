@@ -1,21 +1,45 @@
 ﻿using AcOpenServer.Exceptions;
+using AcOpenServer.Utilities;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace AcOpenServer.Crypto
 {
     public class CWCUdpClientCipher : ICipher
     {
-        private const int AuthTokenLength = 8;
+        private const int AuthTokenLength = sizeof(ulong);
         private const int IVLength = 11;
         private const int TagLength = 16;
         private const int PacketTypeLength = 1;
         private const int HeaderLength = 20;
         private readonly CWCKey Key;
+        private readonly byte[] AuthTokenBytes;
+        private byte PacketType;
+        private bool IsConnectionPrefixed;
         private bool disposedValue;
 
-        public CWCUdpClientCipher(CWCKey key)
+        public bool ConnectionPrefixed 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsConnectionPrefixed;
+            set
+            {
+                IsConnectionPrefixed = value;
+                if (value)
+                {
+                    PacketType = 1;
+                }
+                else
+                {
+                    PacketType = 0;
+                }
+            }
+        }
+
+        public CWCUdpClientCipher(CWCKey key, ulong authToken)
         {
             Key = key;
+            AuthTokenBytes = BitConverter.GetBytes(authToken);
         }
 
         public byte[] Decrypt(byte[] input)
@@ -69,20 +93,33 @@ namespace AcOpenServer.Crypto
 
         public byte[] Encrypt(byte[] input)
         {
+            // Get initialized
             var cwc = Key.GetCWC();
-
+            byte[] authTokenBytes = AuthTokenBytes;
             byte[] iv = new byte[IVLength];
             byte[] tag = new byte[TagLength];
             byte[] message = input;
+            byte packetType = PacketType;
 
-            var rand = new Random();
-            rand.NextBytes(iv);
+            // Randomize IV
+            RandomHelper.NextBytes(iv);
 
+            // Create header
+            int ivHeaderOffset = 0;
+            int authTokenHeaderOffset = IVLength;
+            int packetTypeHeaderOffset = authTokenHeaderOffset + AuthTokenLength;
+            byte[] header = new byte[HeaderLength];
+            Array.Copy(iv, 0, header, ivHeaderOffset, iv.Length);
+            Array.Copy(authTokenBytes, 0, header, authTokenHeaderOffset, iv.Length);
+            header[packetTypeHeaderOffset] = packetType;
+
+            // Encrypt
             if (!cwc.Encrypt(iv, iv, message, tag))
             {
                 throw new CwcCipherException("Failed to encrypt input.");
             }
 
+            // Build information
             int ivOffset = 0;
             int tagOffset = iv.Length;
             int messageOffset = tagOffset + tag.Length;
@@ -102,7 +139,7 @@ namespace AcOpenServer.Crypto
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
+                    Key.Dispose();
                 }
 
                 disposedValue = true;

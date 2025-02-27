@@ -1,4 +1,5 @@
 ﻿using AcOpenServer.Exceptions;
+using AcOpenServer.Utilities;
 using System;
 
 namespace AcOpenServer.Crypto
@@ -55,8 +56,7 @@ namespace AcOpenServer.Crypto
             byte[] tag = new byte[TagLength];
             byte[] message = input;
 
-            var rand = new Random();
-            rand.NextBytes(iv);
+            RandomHelper.NextBytes(iv);
             byte[] header = new byte[IVLength];
             Array.Copy(iv, header, IVLength);
 
@@ -84,7 +84,7 @@ namespace AcOpenServer.Crypto
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
+                    Key.Dispose();
                 }
 
                 disposedValue = true;

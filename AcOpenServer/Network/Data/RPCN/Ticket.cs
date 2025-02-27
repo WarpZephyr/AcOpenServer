@@ -1,5 +1,11 @@
 ﻿using AcOpenServer.Binary;
 using AcOpenServer.Exceptions;
+using Org.BouncyCastle.Asn1.X9;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Math.EC;
+using Org.BouncyCastle.Security;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -12,6 +18,16 @@ namespace AcOpenServer.Network.Data.RPCN
     /// </summary>
     public class Ticket
     {
+        private static readonly Lazy<ECPublicKeyParameters> RpcnPublicKeyParameters = new(() =>
+        {
+            var param = ECNamedCurveTable.GetByName("secp224k1");
+            var curve = new ECDomainParameters(param.Curve, param.G, param.N, param.H, param.GetSeed());
+            var publicKey = curve.Curve.CreatePoint(
+                new BigInteger("b07bc0f0addb97657e9f389039e8d2b9c97dc2a31d3042e7d0479b93", 16),
+                new BigInteger("d81c42b0abdf6c42191a31e31f93342f8f033bd529c2c57fdb5a0a7d", 16));
+            return new ECPublicKeyParameters(publicKey, curve);
+        });
+
         #region Members
 
         /// <summary>
@@ -85,6 +101,12 @@ namespace AcOpenServer.Network.Data.RPCN
         /// The signature of the ticket, empty if not signed.
         /// </summary>
         public byte[] Signature { get; set; }
+
+        /// <summary>
+        /// Whether or not the issue date is in the future.
+        /// </summary>
+        public bool NotIssuedYet
+            => DateTimeOffset.Now < IssuedDate;
 
         /// <summary>
         /// Whether or not this ticket is now expired.

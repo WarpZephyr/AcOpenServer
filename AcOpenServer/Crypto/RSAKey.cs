@@ -47,8 +47,8 @@ namespace AcOpenServer.Crypto
 
         public static RSAKey Generate()
         {
-            BigNumber bigNum = new BigNumber(RSA.RsaF4);
-            RSA rsaInstance = new RSA();
+            var bigNum = new BigNumber(RSA.RsaF4);
+            var rsaInstance = new RSA();
             rsaInstance.GenerateKeys(2048, bigNum, null, null);
 
             return new RSAKey(rsaInstance, false);

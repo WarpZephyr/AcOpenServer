@@ -1,4 +1,5 @@
 ﻿using AcOpenServer.Exceptions;
+using AcOpenServer.Utilities;
 using System;
 
 namespace AcOpenServer.Crypto
@@ -17,25 +18,30 @@ namespace AcOpenServer.Crypto
 
         public byte[] Decrypt(byte[] input)
         {
+            // Get initialized
             var cwc = Key.GetCWC();
-
             byte[] iv = new byte[IVLength];
             byte[] tag = new byte[TagLength];
+
+            // Ensure there is anything to decrypt
             int messageOffset = IVLength + TagLength;
             if (messageOffset >= input.Length)
             {
                 throw new CwcCipherException("Input to decrypt is too small to contain any data.");
             }
 
+            // Initialize output
             int length = input.Length - messageOffset;
             byte[] output = new byte[length];
 
+            // Extract information
             int ivOffset = 0;
             int tagOffset = iv.Length;
             Array.Copy(input, ivOffset, iv, 0, iv.Length);
             Array.Copy(input, tagOffset, tag, 0, tag.Length);
             Array.Copy(input, messageOffset, output, 0, output.Length);
 
+            // Decrypt
             if (!cwc.Decrypt(iv, iv, output, tag))
             {
                 throw new CwcCipherException("Failed to decrypt input.");
@@ -46,20 +52,22 @@ namespace AcOpenServer.Crypto
 
         public byte[] Encrypt(byte[] input)
         {
+            // Get initialized
             var cwc = Key.GetCWC();
-
             byte[] iv = new byte[IVLength];
             byte[] tag = new byte[TagLength];
             byte[] message = input;
 
-            var rand = new Random();
-            rand.NextBytes(iv);
+            // Randomize IV
+            RandomHelper.NextBytes(iv);
 
+            // Encrypt
             if (!cwc.Encrypt(iv, iv, message, tag))
             {
                 throw new CwcCipherException("Failed to encrypt input.");
             }
 
+            // Build information
             int ivOffset = 0;
             int tagOffset = iv.Length;
             int messageOffset = tagOffset + tag.Length;
@@ -79,7 +87,7 @@ namespace AcOpenServer.Crypto
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
+                    Key.Dispose();
                 }
 
                 disposedValue = true;

@@ -707,59 +707,62 @@ namespace AcOpenServer.Binary
 
         public static string ReadUTF8(Span<byte> buffer)
         {
-            int terminatorIndex;
-            for (terminatorIndex = 0; terminatorIndex < buffer.Length; terminatorIndex++)
-                if (buffer[terminatorIndex] == 0)
+            int strLen;
+            for (strLen = 0; strLen < buffer.Length; strLen++)
+                if (buffer[strLen] == 0)
                     break;
 
-            if (terminatorIndex == buffer.Length)
+            if (strLen == buffer.Length)
                 return Encoding.UTF8.GetString(buffer);
 
-            return Encoding.UTF8.GetString(buffer[..terminatorIndex]);
+            return Encoding.UTF8.GetString(buffer[..strLen]);
         }
 
         public static string ReadUTF8(Span<byte> buffer, int offset)
         {
-            int terminatorIndex;
+            int strLen;
             int offsetLength = buffer.Length + offset;
-            for (terminatorIndex = 0; (terminatorIndex + offset) < offsetLength; terminatorIndex++)
-                if (buffer[terminatorIndex + offset] == 0)
+            for (strLen = 0; (strLen + offset) < offsetLength; strLen++)
+                if (buffer[strLen + offset] == 0)
                     break;
 
-            return Encoding.UTF8.GetString(buffer.Slice(offset, terminatorIndex));
+            return Encoding.UTF8.GetString(buffer.Slice(offset, strLen));
         }
 
         public static string ReadUTF8(Span<byte> buffer, ref int offset)
         {
-            int terminatorIndex;
+            int strLen;
             int offsetLength = buffer.Length + offset;
-            for (terminatorIndex = 0; (terminatorIndex + offset) < offsetLength; terminatorIndex++)
-                if (buffer[terminatorIndex + offset] == 0)
+            for (strLen = 0; (strLen + offset) < offsetLength; strLen++)
+                if (buffer[strLen + offset] == 0)
                     break;
 
-            offset += terminatorIndex;
-            offset += 1;
-            return Encoding.UTF8.GetString(buffer.Slice(offset, terminatorIndex));
+            offset += strLen;
+            if (strLen < buffer.Length)
+                offset += 1; // Skip terminator
+
+            return Encoding.UTF8.GetString(buffer.Slice(offset, strLen));
         }
 
         public static string ReadFixedUTF8(Span<byte> buffer, int length)
         {
-            int terminatorIndex;
-            int safeLength = Math.Min(length, buffer.Length);
-            for (terminatorIndex = 0; terminatorIndex < safeLength; terminatorIndex++)
-                if (buffer[terminatorIndex] == 0)
+            int strLen;
+            int minLength = Math.Min(length, buffer.Length);
+            for (strLen = 0; strLen < minLength; strLen++)
+                if (buffer[strLen] == 0)
                     break;
 
-            if (terminatorIndex == length)
+            if (strLen == minLength)
                 return Encoding.UTF8.GetString(buffer);
 
-            return Encoding.UTF8.GetString(buffer[..terminatorIndex]);
+            return Encoding.UTF8.GetString(buffer[..strLen]);
         }
 
         public static string ReadFixedUTF8(Span<byte> buffer, int length, int offset)
         {
             int terminatorIndex;
-            int offsetLength = Math.Min(length, buffer.Length) + offset;
+            int minLength = Math.Min(length, buffer.Length);
+            int offsetLength = minLength + offset;
             for (terminatorIndex = 0; (terminatorIndex + offset) < offsetLength; terminatorIndex++)
                 if (buffer[terminatorIndex + offset] == 0)
                     break;
@@ -770,13 +773,14 @@ namespace AcOpenServer.Binary
         public static string ReadFixedUTF8(Span<byte> buffer, int length, ref int offset)
         {
             int terminatorIndex;
-            int offsetLength = Math.Min(length, buffer.Length) + offset;
+            int minLength = Math.Min(length, buffer.Length);
+            int offsetLength = minLength + offset;
             for (terminatorIndex = 0; (terminatorIndex + offset) < offsetLength; terminatorIndex++)
                 if (buffer[terminatorIndex + offset] == 0)
                     break;
 
             string value = Encoding.UTF8.GetString(buffer.Slice(offset, terminatorIndex));
-            offset += length;
+            offset += minLength;
             return value;
         }
 

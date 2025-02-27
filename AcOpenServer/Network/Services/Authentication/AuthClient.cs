@@ -19,6 +19,10 @@ namespace AcOpenServer.Network.Services.Authentication
 {
     public class AuthClient : IDisposable, IAsyncDisposable
     {
+        // TODO: Add more as time goes on
+        private static readonly string[] KnownTitleIDs
+            = ["UP0700-BLUS31194_00"];
+
         private readonly SVFWMessageClient Client;
         private readonly AuthConfig Config;
         private readonly ScopeLog Log;
@@ -224,10 +228,25 @@ namespace AcOpenServer.Network.Services.Authentication
                 return;
             }
 
+            // Validate the issue date of the ticket
+            if (ticket.NotIssuedYet)
+            {
+                Disconnect($"User sent an invalid ticket that is issued to a future date on {ticket.IssuedDate}: {PlayerName}");
+                return;
+            }
+
             // Validate the ticket hasn't expired
             if (ticket.IsExpired)
             {
                 Disconnect($"User sent a ticket that expired on {ticket.ExpireDate}: {PlayerName}");
+                return;
+            }
+
+            // Validate the ticket has a known title ID
+            string titleID = ticket.GetServiceIdString();
+            if (!KnownTitleIDs.Contains(titleID))
+            {
+                Disconnect($"User sent a ticket with unknown title ID of \"{titleID}\": {PlayerName}");
                 return;
             }
 
