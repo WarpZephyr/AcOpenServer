@@ -57,7 +57,7 @@ namespace AcOpenServer.Crypto
         public void Save(string privatePath, string publicPath)
         {
             BIO bioPublic = BIO.File(publicPath, "w+");
-            RsaInstance.WritePrivateKey(bioPublic, null, null, null);
+            RsaInstance.WritePublicKey(bioPublic);
             bioPublic.Dispose();
 
             if (!IsPublicKey)
