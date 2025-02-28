@@ -365,3 +365,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Native folders
+!/native/tools/build/cmake/windows/bin
+!/native/tools/build/cmake/linux/bin
