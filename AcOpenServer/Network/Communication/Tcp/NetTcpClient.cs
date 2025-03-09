@@ -13,7 +13,7 @@ namespace AcOpenServer.Network.Communication.Tcp
     {
         private readonly TcpClient Client;
         private readonly double Timeout;
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly NetworkStream Stream;
         private readonly CancellationTokenSource CancellationTokenSource;
         private readonly bool IsPrivateClient;
@@ -26,7 +26,7 @@ namespace AcOpenServer.Network.Communication.Tcp
 
         public event EventHandler<int>? Received;
 
-        public NetTcpClient(TcpClient client, double timeout, ScopeLog log)
+        public NetTcpClient(TcpClient client, double timeout, Logger log)
         {
             Client = client;
             Timeout = timeout;

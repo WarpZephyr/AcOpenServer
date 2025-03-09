@@ -2,6 +2,7 @@
 using AcOpenServer.Logging;
 using AcOpenServer.Network.Communication.SVFW;
 using AcOpenServer.Network.Communication.Tcp;
+using AcOpenServer.Network.Crypto.RPCN;
 using AcOpenServer.Network.Data.AC;
 using AcOpenServer.Network.Services.Authentication;
 using AcOpenServer.Network.Services.Login;
@@ -21,20 +22,22 @@ namespace AcOpenServer.Network.Servers
         private const string ConfigFileName = "config.json";
         private const string PublicKeyFileName = "publickey.pem";
         private const string PrivateKeyFileName = "privatekey.pem";
+        private const string TicketPublicKeyFileName = "ticket_public.pem";
 
-        private static readonly AcvAppVersion MinimumAppVersion = new AcvAppVersion(0x5644000001000002);
-        private static readonly AcvAppVersion MaximumAppVersion = new AcvAppVersion(0x5644000001000002);
+        private static readonly AcvAppVersion MinimumAppVersion = new AcvAppVersion(0x5644000001000002UL);
+        private static readonly AcvAppVersion MaximumAppVersion = new AcvAppVersion(0x5644000001000002UL);
 
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly string ServerFolder;
         private ServerConfig? Config;
         private RSAKey? PrivateKey;
         private IPAddress? PublicIP;
         private IPAddress? PrivateIP;
+        private CipherSignatureParameters? SignatureParameters;
 
         public string Name { get; init; }
 
-        public Server(string serverFolder, string name, ScopeLog log)
+        public Server(string serverFolder, string name, Logger log)
         {
             Log = log;
             ServerFolder = serverFolder;
@@ -42,7 +45,7 @@ namespace AcOpenServer.Network.Servers
             Name = name;
         }
 
-        public Server(string serverFolder, string name, RSAKey privateKey, ServerConfig config, ScopeLog log)
+        public Server(string serverFolder, string name, RSAKey privateKey, ServerConfig config, Logger log)
         {
             Log = log;
             ServerFolder = serverFolder;
@@ -60,6 +63,19 @@ namespace AcOpenServer.Network.Servers
                 return false;
             }
 
+            // Load Private Key
+            if (PrivateKey == null)
+            {
+                if (!LoadKey(PrivateKeyFileName, false, out RSAKey? privateKey))
+                {
+                    Log.Error($"Failed to load private key from {PrivateKeyFileName}");
+                    return false;
+                }
+
+                PrivateKey = privateKey;
+            }
+
+            // Load config
             if (Config == null)
             {
                 string configPath = Path.Combine(ServerFolder, ConfigFileName);
@@ -80,6 +96,7 @@ namespace AcOpenServer.Network.Servers
                 }
             }
 
+            // Load Logger Settings
 #if DEBUG
             Log.ChannelFlags = LogChannelFlags.Debug;
 #else
@@ -97,17 +114,41 @@ namespace AcOpenServer.Network.Servers
 
             Log.ChannelFlags |= LogChannelFlags.Error;
 
-            if (PrivateKey == null)
+            // Load Ticket signature key
+            string ticketPublicPath = Path.Combine(ServerFolder, TicketPublicKeyFileName);
+            if (File.Exists(ticketPublicPath))
             {
-                if (!LoadKey(PrivateKeyFileName, false, out RSAKey? privateKey))
+                var keyParams = ECDSAKey.LoadPublicKeyFromPemFile(ticketPublicPath);
+                string algorithm = Config.TicketDigest;
+                if (!SignerAlgorithmHelper.IsAlgorithmECDSA(algorithm))
                 {
-                    Log.Error($"Failed to load private key from {PrivateKeyFileName}");
-                    return false;
+                    Log.Error($"Invalid or unknown signature algorithm for ECDSA: {algorithm}");
+                    SignatureParameters = null;
                 }
-
-                PrivateKey = privateKey;
+                else
+                {
+                    Log.Info("Loaded RPCN ticket signature verification public key.");
+                    SignatureParameters = new CipherSignatureParameters()
+                    {
+                        Algorithm = algorithm,
+                        Parameters = keyParams
+                    };
+                }
             }
 
+            // Show warning about ticket verification
+            if (!Config.TicketVerification)
+            {
+                Log.Warn("Not verifying tickets, invalid tickets may be sent.");
+            }
+
+            // Show warning about signature verification
+            else if (!Config.TicketSignatureVerification || !Config.TicketVerification)
+            {
+                Log.Warn("Not verifying ticket signatures, malicious tickets may be sent.");
+            }
+
+            // Load IP Address Settings
             if (Config.Local)
             {
                 var ip = new IPAddress([127, 0, 0, 1]);
@@ -146,6 +187,7 @@ namespace AcOpenServer.Network.Servers
                 return false;
             }
 
+            // Make Service Configs
             var listenIP = new IPAddress([0, 0, 0, 0]);
             var loginListener = CreateListener(listenIP, Config.LoginPort, PrivateKey, Config.LoginClientTimeout);
             var authListener = CreateListener(listenIP, Config.AuthPort, PrivateKey, Config.AuthClientTimeout);
@@ -160,11 +202,15 @@ namespace AcOpenServer.Network.Servers
                 PrivateIP = privateIP,
                 GamePort = (ushort)Config.GamePort,
                 MinimumVersion = MinimumAppVersion,
-                MaximumVersion = MaximumAppVersion
+                MaximumVersion = MaximumAppVersion,
+                TicketVerification = Config.TicketVerification,
+                TicketSignatureVerification = Config.TicketSignatureVerification,
+                SignatureParameters = SignatureParameters
             };
 
-            var loginService = new LoginService(loginListener, loginConfig, Log.Push(nameof(LoginService)));
-            var authService = new AuthService(authListener, authConfig, Log.Push(nameof(AuthService)));
+            // Start Services
+            var loginService = new LoginService(loginListener, loginConfig, Log);
+            var authService = new AuthService(authListener, authConfig, Log);
             var loginTask = loginService.ListenAsync();
             var authTask = authService.ListenAsync();
             await Task.WhenAll(loginTask, authTask);
@@ -203,7 +249,7 @@ namespace AcOpenServer.Network.Servers
         private SVFWMessageListener CreateListener(IPAddress serverIP, int port, RSAKey key, double clientTimeout)
         {
             var tcpListener = new TcpListener(serverIP, port);
-            var netListener = new NetTcpListener(tcpListener, clientTimeout, Log.Push(nameof(NetTcpListener)));
+            var netListener = new NetTcpListener(tcpListener, clientTimeout, Log);
 
             var decryptionCipher = new RSACipher(key, RSA.Padding.OAEP);
             var encryptionCipher = new RSACipher(key, RSA.Padding.X931);

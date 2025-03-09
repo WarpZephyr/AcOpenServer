@@ -28,7 +28,7 @@ namespace AcOpenServer.Network.Servers
             foreach (var folder in Directory.EnumerateDirectories(serversFolder))
             {
                 string name = Path.GetFileName(folder);
-                Servers.Add(new Server(folder, name, Log.Scope(name)));
+                Servers.Add(new Server(folder, name, Log));
                 serverFound = true;
             }
 
@@ -54,7 +54,7 @@ namespace AcOpenServer.Network.Servers
             var config = new ServerConfig();
             config.Save(serverConfigPath);
 
-            return new Server(serverFolder, DefaultServerName, key, config, Log.Scope(DefaultServerName));
+            return new Server(serverFolder, DefaultServerName, key, config, Log);
         }
 
         public Task StartServersAsync()

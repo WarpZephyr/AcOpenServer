@@ -1,11 +1,8 @@
-﻿using AcOpenServer.Binary;
+﻿using AcOpenServer.Crypto;
 using AcOpenServer.Exceptions;
-using Org.BouncyCastle.Asn1.X9;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Math.EC;
-using Org.BouncyCastle.Security;
+using AcOpenServer.Network.Crypto.RPCN;
+using BinaryMemory.IO;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -18,16 +15,6 @@ namespace AcOpenServer.Network.Data.RPCN
     /// </summary>
     public class Ticket
     {
-        private static readonly Lazy<ECPublicKeyParameters> RpcnPublicKeyParameters = new(() =>
-        {
-            var param = ECNamedCurveTable.GetByName("secp224k1");
-            var curve = new ECDomainParameters(param.Curve, param.G, param.N, param.H, param.GetSeed());
-            var publicKey = curve.Curve.CreatePoint(
-                new BigInteger("b07bc0f0addb97657e9f389039e8d2b9c97dc2a31d3042e7d0479b93", 16),
-                new BigInteger("d81c42b0abdf6c42191a31e31f93342f8f033bd529c2c57fdb5a0a7d", 16));
-            return new ECPublicKeyParameters(publicKey, curve);
-        });
-
         #region Members
 
         /// <summary>
@@ -153,39 +140,56 @@ namespace AcOpenServer.Network.Data.RPCN
         #region Constructors
 
         /// <summary>
+        /// Create a new and empty <see cref="Ticket"/>.
+        /// </summary>
+        public Ticket()
+        {
+            Version = 0x21010000;
+            Serial = new byte[20];
+            IssuerID = 0x100;
+            IssuedDate = DateTimeOffset.Now;
+            ExpireDate = IssuedDate.AddMinutes(15);
+            UserID = 0UL;
+            OnlineID = string.Empty;
+            Region = new byte[4];
+            Domain = string.Empty;
+            ServiceID = new byte[24];
+            Status = 0;
+            Cookie = new byte[33];
+            Signer = new byte[4];
+            Signature = new byte[63];
+        }
+
+        /// <summary>
         /// Parse a new <see cref="Ticket"/> from a payload.
         /// </summary>
         /// <param name="payload">The payload.</param>
         /// <exception cref="NotSupportedException">The payload was too big.</exception>
         /// <exception cref="InvalidDataException">The payload was too small for the specified sizes.</exception>
-        public Ticket(Span<byte> payload)
+        private Ticket(ReadOnlySpan<byte> payload)
         {
-            int offset = 0;
-            Version = BinaryBufferReader.ReadUInt32BigEndian(payload, ref offset);
-            int size = BinaryBufferReader.ReadInt32BigEndian(payload, ref offset);
-            if (size < 0)
-                throw new TicketParseException($"Payloads bigger than {int.MaxValue} are not supported; Size: {(uint)size}");
-
+            var br = new BinarySpanReader(payload, true);
+            Version = br.ReadUInt32();
+            uint size = br.ReadUInt32();
             if (size > payload.Length - 8)
                 throw new TicketParseException($"Payload buffer is too small for the specified data size; Minimum Expected: {size}, Remaining: {payload.Length - 8}");
 
-            ReadUserdata(payload, ref offset);
-            ReadSignature(payload, ref offset);
+            ReadUserdata(ref br);
+            ReadSignature(ref br);
         }
 
         #endregion
 
-        #region Parse
+        #region Read
 
-        public static Ticket Parse(Span<byte> payload)
-            => new Ticket(payload);
+        public static Ticket Read(ReadOnlySpan<byte> payload)
+            => new(payload);
 
-        public static bool TryParse(Span<byte> payload, [NotNullWhen(true)] out Ticket? result, [NotNullWhen(false)] out string? error)
+        public static bool TryRead(ReadOnlySpan<byte> payload, [NotNullWhen(true)] out Ticket? result, [NotNullWhen(false)] out string? error)
         {
-            // TODO Stop using exceptions as logic
             try
             {
-                result = Parse(payload);
+                result = Read(payload);
                 error = null;
                 return true;
             }
@@ -199,70 +203,91 @@ namespace AcOpenServer.Network.Data.RPCN
 
         #endregion
 
-        #region Read
+        #region Write
 
-        private static ushort Expect(Span<byte> payload, ref int offset, TicketDataType expectedType)
+        public Span<byte> Write()
         {
-            var type = (TicketDataType)BinaryBufferReader.ReadUInt16BigEndian(payload, ref offset);
+            using var bw = new BinaryStreamWriter(true);
+            bw.WriteUInt32(Version);
+            bw.ReserveUInt32("Size");
+            long dataStart = bw.Position;
+            WriteUserdata(bw);
+            WriteSignature(bw);
+            bw.FillUInt32("Size", (uint)(bw.Position - dataStart));
+            return bw.ToArray();
+        }
+
+        private byte[] GetUserdataBytes()
+        {
+            using var bw = new BinaryStreamWriter(true);
+            WriteUserdata(bw);
+            return bw.ToArray();
+        }
+
+        #endregion
+
+        #region Read Helpers
+
+        private static ushort Expect(ref BinarySpanReader br, TicketDataType expectedType)
+        {
+            var type = (TicketDataType)br.ReadUInt16();
             if (type != expectedType)
                 throw new TicketParseException($"Unexpected {nameof(TicketDataType)}; Expected: {expectedType}, Received: {type}");
 
             // Length
-            return BinaryBufferReader.ReadUInt16BigEndian(payload, ref offset);
+            return br.ReadUInt16();
         }
 
-        private static void Expect(Span<byte> payload, ref int offset, TicketDataType expectedType, int expectedLength)
+        private static void Expect(ref BinarySpanReader br, TicketDataType expectedType, int expectedLength)
         {
-            var type = (TicketDataType)BinaryBufferReader.ReadUInt16BigEndian(payload, ref offset);
+            var type = (TicketDataType)br.ReadUInt16();
             if (type != expectedType)
                 throw new TicketParseException($"Unexpected {nameof(TicketDataType)}; Expected: {expectedType}, Received: {type}");
 
-            var length = BinaryBufferReader.ReadUInt16BigEndian(payload, ref offset);
+            var length = br.ReadUInt16();
             if (length != expectedLength)
                 throw new TicketParseException($"Unexpected {nameof(TicketDataType)} length; Expected: {expectedLength}, Received: {length}");
         }
 
-        private static uint ReadTicketDataU32(Span<byte> payload, ref int offset)
+        private static uint ReadTicketDataU32(ref BinarySpanReader br)
         {
-            Expect(payload, ref offset, TicketDataType.U32, sizeof(uint));
-            return BinaryBufferReader.ReadUInt32BigEndian(payload, ref offset);
+            Expect(ref br, TicketDataType.U32, sizeof(uint));
+            return br.ReadUInt32();
         }
 
-        private static ulong ReadTicketDataU64(Span<byte> payload, ref int offset)
+        private static ulong ReadTicketDataU64(ref BinarySpanReader br)
         {
-            Expect(payload, ref offset, TicketDataType.U64, sizeof(ulong));
-            return BinaryBufferReader.ReadUInt64BigEndian(payload, ref offset);
+            Expect(ref br, TicketDataType.U64, sizeof(ulong));
+            return br.ReadUInt64();
         }
 
-        private static DateTimeOffset ReadTicketDataTime(Span<byte> payload, ref int offset)
+        private static DateTimeOffset ReadTicketDataTime(ref BinarySpanReader br)
         {
-            Expect(payload, ref offset, TicketDataType.Time, sizeof(ulong));
-            return DateTimeOffset.FromUnixTimeMilliseconds((long)BinaryBufferReader.ReadUInt64BigEndian(payload, ref offset));
+            Expect(ref br, TicketDataType.Time, sizeof(ulong));
+            return DateTimeOffset.FromUnixTimeMilliseconds((long)br.ReadUInt64());
         }
 
-        private static string ReadTicketDataBString(Span<byte> payload, ref int offset)
+        private static string ReadTicketDataBString(ref BinarySpanReader br)
         {
-            ushort length = Expect(payload, ref offset, TicketDataType.BString);
-            return BinaryBufferReader.ReadFixedUTF8(payload, length, ref offset);
+            ushort length = Expect(ref br, TicketDataType.BString);
+            return br.ReadUTF8(length);
         }
 
-        private static byte[] ReadTicketDataBinary(Span<byte> payload, ref int offset)
+        private static byte[] ReadTicketDataBinary(ref BinarySpanReader br)
         {
-            ushort length = Expect(payload, ref offset, TicketDataType.Binary);
-            var value = payload.Slice(offset, length).ToArray();
-            offset += length;
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ReadTicketDataEmpty(Span<byte> payload, ref int offset)
-        {
-            Expect(payload, ref offset, TicketDataType.Empty, 0);
+            ushort length = Expect(ref br, TicketDataType.Binary);
+            return br.ReadBytes(length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static TicketDataType PeekTicketDataType(Span<byte> payload, int offset)
-            => (TicketDataType)BinaryBufferReader.ReadUInt16BigEndian(payload, offset);
+        private static void ReadTicketDataEmpty(ref BinarySpanReader br)
+        {
+            Expect(ref br, TicketDataType.Empty, 0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static TicketDataType PeekTicketDataType(ref BinarySpanReader br)
+            => (TicketDataType)br.PeekUInt16();
 
         [MemberNotNull(nameof(Serial))]
         [MemberNotNull(nameof(OnlineID))]
@@ -270,40 +295,136 @@ namespace AcOpenServer.Network.Data.RPCN
         [MemberNotNull(nameof(Domain))]
         [MemberNotNull(nameof(ServiceID))]
         [MemberNotNull(nameof(Cookie))]
-        private void ReadUserdata(Span<byte> payload, ref int offset)
+        private void ReadUserdata(ref BinarySpanReader br)
         {
-            _ = Expect(payload, ref offset, TicketDataType.BlobUserdata);
-            Serial = ReadTicketDataBinary(payload, ref offset);
-            IssuerID = ReadTicketDataU32(payload, ref offset);
-            IssuedDate = ReadTicketDataTime(payload, ref offset);
-            ExpireDate = ReadTicketDataTime(payload, ref offset);
-            UserID = ReadTicketDataU64(payload, ref offset);
-            OnlineID = ReadTicketDataBString(payload, ref offset);
-            Region = ReadTicketDataBinary(payload, ref offset);
-            Domain = ReadTicketDataBString(payload, ref offset);
-            ServiceID = ReadTicketDataBinary(payload, ref offset);
-            Status = ReadTicketDataU32(payload, ref offset);
+            _ = Expect(ref br, TicketDataType.BlobUserdata);
+            Serial = ReadTicketDataBinary(ref br);
+            IssuerID = ReadTicketDataU32(ref br);
+            IssuedDate = ReadTicketDataTime(ref br);
+            ExpireDate = ReadTicketDataTime(ref br);
+            UserID = ReadTicketDataU64(ref br);
+            OnlineID = ReadTicketDataBString(ref br);
+            Region = ReadTicketDataBinary(ref br);
+            Domain = ReadTicketDataBString(ref br);
+            ServiceID = ReadTicketDataBinary(ref br);
+            Status = ReadTicketDataU32(ref br);
 
-            if (PeekTicketDataType(payload, offset) != TicketDataType.Empty)
+            if (PeekTicketDataType(ref br) != TicketDataType.Empty)
             {
-                Cookie = ReadTicketDataBinary(payload, ref offset);
+                Cookie = ReadTicketDataBinary(ref br);
             }
             else
             {
                 Cookie = [];
             }
 
-            ReadTicketDataEmpty(payload, ref offset);
-            ReadTicketDataEmpty(payload, ref offset);
+            ReadTicketDataEmpty(ref br);
+            ReadTicketDataEmpty(ref br);
         }
 
         [MemberNotNull(nameof(Signer))]
         [MemberNotNull(nameof(Signature))]
-        private void ReadSignature(Span<byte> payload, ref int offset)
+        private void ReadSignature(ref BinarySpanReader br)
         {
-            _ = Expect(payload, ref offset, TicketDataType.BlobSignature);
-            Signer = ReadTicketDataBinary(payload, ref offset);
-            Signature = ReadTicketDataBinary(payload, ref offset);
+            _ = Expect(ref br, TicketDataType.BlobSignature);
+            Signer = ReadTicketDataBinary(ref br);
+            Signature = ReadTicketDataBinary(ref br);
+        }
+
+        #endregion
+
+        #region Write Helpers
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void WriteTicketDataType(BinaryStreamWriter bw, TicketDataType type)
+            => bw.WriteUInt16((ushort)type);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void WriteTicketDataHeader(BinaryStreamWriter bw, TicketDataType type, ushort length)
+        {
+            WriteTicketDataType(bw, type);
+            bw.WriteUInt16(length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void WriteTicketDataHeader(BinaryStreamWriter bw, TicketDataType type, string lengthReservation)
+        {
+            WriteTicketDataType(bw, type);
+            bw.ReserveUInt16(lengthReservation);
+        }
+
+        private static void WriteTicketDataU32(BinaryStreamWriter bw, uint value)
+        {
+            WriteTicketDataHeader(bw, TicketDataType.U32, sizeof(uint));
+            bw.WriteUInt32(value);
+        }
+
+        private static void WriteTicketDataU64(BinaryStreamWriter bw, ulong value)
+        {
+            WriteTicketDataHeader(bw, TicketDataType.U64, sizeof(ulong));
+            bw.WriteUInt64(value);
+        }
+
+        private static void WriteTicketDataTime(BinaryStreamWriter bw, DateTimeOffset value)
+        {
+            WriteTicketDataHeader(bw, TicketDataType.Time, sizeof(ulong));
+            bw.WriteUInt64((ulong)value.ToUnixTimeMilliseconds());
+        }
+
+        private static void WriteTicketDataBString(BinaryStreamWriter bw, string value, ushort length)
+        {
+            WriteTicketDataHeader(bw, TicketDataType.BString, length);
+            bw.WriteFixedUTF8(value, length, 0);
+        }
+
+        private static void WriteTicketDataBinary(BinaryStreamWriter bw, byte[] value)
+        {
+            WriteTicketDataHeader(bw, TicketDataType.Binary, (ushort)value.Length);
+            bw.WriteBytes(value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void WriteTicketDataEmpty(BinaryStreamWriter bw)
+        {
+            WriteTicketDataHeader(bw, TicketDataType.Empty, 0);
+        }
+
+        private void WriteUserdata(BinaryStreamWriter bw)
+        {
+            WriteTicketDataHeader(bw, TicketDataType.BlobUserdata, "UserdataLength");
+            long dataStart = bw.Position;
+
+            WriteTicketDataBinary(bw, Serial);
+            WriteTicketDataU32(bw, IssuerID);
+            WriteTicketDataTime(bw, IssuedDate);
+            WriteTicketDataTime(bw, ExpireDate);
+            WriteTicketDataU64(bw, UserID);
+            WriteTicketDataBString(bw, OnlineID, 32);
+            WriteTicketDataBinary(bw, Region);
+            WriteTicketDataBString(bw, Domain, 4);
+            WriteTicketDataBinary(bw, ServiceID);
+            WriteTicketDataU32(bw, Status);
+
+            if (Cookie.Length > 0)
+            {
+                WriteTicketDataBinary(bw, Cookie);
+            }
+
+            WriteTicketDataEmpty(bw);
+            WriteTicketDataEmpty(bw);
+
+            bw.FillUInt16("UserdataLength", (ushort)(bw.Position - dataStart));
+        }
+
+        private void WriteSignature(BinaryStreamWriter bw)
+        {
+            WriteTicketDataHeader(bw, TicketDataType.BlobSignature, "SignatureLength");
+            long dataStart = bw.Position;
+
+            WriteTicketDataBinary(bw, Signer);
+            WriteTicketDataBinary(bw, Signature);
+
+            bw.FillUInt16("SignatureLength", (ushort)(bw.Position - dataStart));
         }
 
         #endregion
@@ -312,19 +433,42 @@ namespace AcOpenServer.Network.Data.RPCN
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetSerialString()
-            => BinaryBufferReader.ReadUTF8(Serial);
+            => BinaryBufferReader.PeekUTF8(Serial);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetRegionString()
-            => BinaryBufferReader.ReadUTF8(Region);
+            => BinaryBufferReader.PeekUTF8(Region);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetServiceIdString()
-            => BinaryBufferReader.ReadUTF8(ServiceID);
+            => BinaryBufferReader.PeekUTF8(ServiceID);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetSignerString()
-            => BinaryBufferReader.ReadUTF8(Signer);
+            => BinaryBufferReader.PeekUTF8(Signer);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsRPCN()
+            // Check for "RPCN"
+            => Signer.Length == 4
+            && Signer[0] == 0x52
+            && Signer[1] == 0x50
+            && Signer[2] == 0x43
+            && Signer[3] == 0x4E;
+
+        #endregion
+
+        #region Crypto
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte[] GetRpcnSignedBytes()
+            => GetUserdataBytes();
+
+        public bool RpcnSignatureValid(ReadOnlySpan<byte> input)
+            => RpcnSignatureVerifier.RpcnSignatureValid(input, Signature);
+
+        public bool RpcnSignatureValid(CipherSignatureParameters parameters, ReadOnlySpan<byte> input)
+            => SignatureVerifier.SignatureValid(parameters, input, Signature);
 
         #endregion
 

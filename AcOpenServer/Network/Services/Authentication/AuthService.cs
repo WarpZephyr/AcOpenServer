@@ -10,13 +10,13 @@ namespace AcOpenServer.Network.Services.Authentication
     {
         private readonly SVFWMessageListener Listener;
         private readonly AuthConfig Config;
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly PeriodicTimer PollTimer;
         private bool disposedValue;
 
         public bool IsDisposed => disposedValue;
 
-        public AuthService(SVFWMessageListener listener, AuthConfig config, ScopeLog log)
+        public AuthService(SVFWMessageListener listener, AuthConfig config, Logger log)
         {
             Listener = listener;
             Config = config;
@@ -28,7 +28,7 @@ namespace AcOpenServer.Network.Services.Authentication
 
         public Task ListenAsync()
         {
-            Log.Info("Started");
+            Log.Info("Started Auth Service");
             Listener.Accepted += OnAccepted;
             return Listener.ListenAsync();
         }
@@ -43,7 +43,7 @@ namespace AcOpenServer.Network.Services.Authentication
             {
                 if (!client.IsConnected())
                 {
-                    Log.Info($"Client disconnected: {client.Name}");
+                    Log.Info($"Auth Client disconnected: {client.Name}");
                     return;
                 }
             }
@@ -55,8 +55,8 @@ namespace AcOpenServer.Network.Services.Authentication
 
         private void OnAccepted(object? sender, SVFWMessageClient messageClient)
         {
-            var client = new AuthClient(messageClient, Config, Log.Push(nameof(AuthClient)));
-            Log.Info($"Client connected: {client.Name}");
+            var client = new AuthClient(messageClient, Config, Log);
+            Log.Info($"Auth Client connected: {client.Name}");
 
             _ = client.ReceiveAsync().ContinueWith((Task task) => ClientCleanup(task, "receive", client.Name));
             _ = client.SendAsync().ContinueWith((Task task) => ClientCleanup(task, "send", client.Name));
@@ -71,7 +71,7 @@ namespace AcOpenServer.Network.Services.Authentication
         {
             if (task.Exception != null)
             {
-                Log.Error($"Client {clientName} {type} task had an error: {task.Exception}");
+                Log.Error($"Auth Client {clientName} {type} task had an error: {task.Exception}");
             }
         }
 

@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace AcOpenServer.Binary
+namespace BinaryMemory.IO
 {
+    /// <summary>
+    /// Static methods for writing binary data.
+    /// </summary>
     public static class BinaryBufferWriter
     {
+        #region Generic
+
         public static void Write<T>(Span<byte> buffer, int offset, T value) where T : unmanaged
             => Unsafe.WriteUnaligned(ref buffer[offset], value);
 
@@ -17,5 +22,7 @@ namespace AcOpenServer.Binary
             Write(buffer, value);
             return buffer;
         }
+
+        #endregion
     }
 }

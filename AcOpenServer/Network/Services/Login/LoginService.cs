@@ -10,13 +10,13 @@ namespace AcOpenServer.Network.Services.Login
     {
         private readonly SVFWMessageListener Listener;
         private readonly LoginConfig Config;
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly PeriodicTimer PollTimer;
         private bool disposedValue;
 
         public bool IsDisposed => disposedValue;
 
-        public LoginService(SVFWMessageListener listener, LoginConfig config, ScopeLog log)
+        public LoginService(SVFWMessageListener listener, LoginConfig config, Logger log)
         {
             Listener = listener;
             Config = config;
@@ -28,7 +28,7 @@ namespace AcOpenServer.Network.Services.Login
 
         public Task ListenAsync()
         {
-            Log.Info("Started");
+            Log.Info("Started Login Service");
             Listener.Accepted += OnAccepted;
             return Listener.ListenAsync();
         }
@@ -43,7 +43,7 @@ namespace AcOpenServer.Network.Services.Login
             {
                 if (!client.IsConnected())
                 {
-                    Log.Info($"Client disconnected: {client.Name}");
+                    Log.Info($"Login Client disconnected: {client.Name}");
                     return;
                 }
             }
@@ -55,8 +55,8 @@ namespace AcOpenServer.Network.Services.Login
 
         private void OnAccepted(object? sender, SVFWMessageClient messageClient)
         {
-            var client = new LoginClient(messageClient, Config, Log.Push(nameof(LoginClient)));
-            Log.Info($"Client connected: {client.Name}");
+            var client = new LoginClient(messageClient, Config, Log);
+            Log.Info($"Login Client connected: {client.Name}");
 
             _ = client.ReceiveAsync().ContinueWith((Task task) => ClientCleanup(task, "receive", client.Name));
             _ = client.SendAsync().ContinueWith((Task task) => ClientCleanup(task, "send", client.Name));
@@ -71,7 +71,7 @@ namespace AcOpenServer.Network.Services.Login
         {
             if (task.Exception != null)
             {
-                Log.Error($"{nameof(LoginClient)} {clientName} {type} task had an error: {task.Exception}");
+                Log.Error($"Login Client {clientName} {type} task had an error: {task.Exception}");
             }
         }
 

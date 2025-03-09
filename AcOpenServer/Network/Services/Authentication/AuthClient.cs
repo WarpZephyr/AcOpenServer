@@ -1,11 +1,11 @@
-﻿using AcOpenServer.Binary;
-using AcOpenServer.Crypto;
+﻿using AcOpenServer.Crypto;
 using AcOpenServer.Logging;
 using AcOpenServer.Network.Communication.SVFW;
 using AcOpenServer.Network.Data.AC;
 using AcOpenServer.Network.Data.RPCN;
 using AcOpenServer.Network.Data.SVFW;
 using AcOpenServer.Utilities;
+using BinaryMemory.IO;
 using Google.Protobuf;
 using SVFWRequestMessage;
 using System;
@@ -25,7 +25,7 @@ namespace AcOpenServer.Network.Services.Authentication
 
         private readonly SVFWMessageClient Client;
         private readonly AuthConfig Config;
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly Queue<Task> SendQueue;
         private readonly byte[] GameCwcKeyBytes;
 
@@ -41,7 +41,7 @@ namespace AcOpenServer.Network.Services.Authentication
         public bool Completed => AuthState == AuthClientState.Complete;
         public CWCKey? GameKey => GameCwcKey;
 
-        public AuthClient(SVFWMessageClient client, AuthConfig config, ScopeLog log)
+        public AuthClient(SVFWMessageClient client, AuthConfig config, Logger log)
         {
             Client = client;
             Config = config;
@@ -222,37 +222,55 @@ namespace AcOpenServer.Network.Services.Authentication
         private void Handle_WaitingForTicket(SVFWMessage message)
         {
             // Parse the ticket
-            if (!Ticket.TryParse(message.Payload, out Ticket? ticket, out string? error))
+            if (!Ticket.TryRead(message.Payload, out Ticket? ticket, out string? error))
             {
                 Disconnect($"Disconnecting {PlayerName} due to a ticket parsing error: {error}");
                 return;
             }
 
-            // Validate the issue date of the ticket
-            if (ticket.NotIssuedYet)
+            // Validate ticket
+            if (Config.TicketVerification)
             {
-                Disconnect($"User sent an invalid ticket that is issued to a future date on {ticket.IssuedDate}: {PlayerName}");
-                return;
-            }
+                // Validate the issue date of the ticket
+                if (ticket.NotIssuedYet)
+                {
+                    Disconnect($"User sent an invalid ticket that is issued to a future date on {ticket.IssuedDate}: {PlayerName}");
+                    return;
+                }
 
-            // Validate the ticket hasn't expired
-            if (ticket.IsExpired)
-            {
-                Disconnect($"User sent a ticket that expired on {ticket.ExpireDate}: {PlayerName}");
-                return;
-            }
+                // Validate the ticket hasn't expired
+                if (ticket.IsExpired)
+                {
+                    Disconnect($"User sent a ticket that expired on {ticket.ExpireDate}: {PlayerName}");
+                    return;
+                }
 
-            // Validate the ticket has a known title ID
-            string titleID = ticket.GetServiceIdString();
-            if (!KnownTitleIDs.Contains(titleID))
-            {
-                Disconnect($"User sent a ticket with unknown title ID of \"{titleID}\": {PlayerName}");
-                return;
-            }
+                // Validate the ticket has a known title ID
+                string titleID = ticket.GetServiceIdString();
+                if (!KnownTitleIDs.Contains(titleID))
+                {
+                    Disconnect($"User sent a ticket with unknown title ID of \"{titleID}\": {PlayerName}");
+                    return;
+                }
 
-            // Warn when ticket isn't signed
-            if (!ticket.IsSigned)
-                Log.Warn($"User sent a ticket that isn't signed: {PlayerName}");
+                // Validate ticket signature
+                if (Config.TicketSignatureVerification)
+                {
+                    // Validate a ticket signature exists
+                    if (!ticket.IsSigned)
+                    {
+                        Disconnect($"User sent an unsigned ticket: {PlayerName}");
+                        return;
+                    }
+
+                    // Validate the ticket signature
+                    if (!SignatureValid(ticket))
+                    {
+                        Disconnect($"User sent a ticket with an invalid signature: {PlayerName}");
+                        return;
+                    }
+                }
+            }
 
             // Validate we are both using the same key
             var ticketCwcBytes = ticket.Cookie[..16];
@@ -305,6 +323,42 @@ namespace AcOpenServer.Network.Services.Authentication
             SendQueue.Enqueue(Client.SendAsync(serverInfoMessage, SVFWMessageType.Reply, message.Header.MessageIndex));
             Log.Info($"User authenticated: {PlayerName}");
             AuthState = AuthClientState.Complete;
+        }
+
+        #endregion
+
+        #region Ticket
+
+        private bool SignatureValid(Ticket ticket)
+        {
+            if (ticket.IsRPCN())
+            {
+                ReadOnlySpan<byte> input = ticket.GetRpcnSignedBytes();
+                if (Config.SignatureParameters != null)
+                {
+                    if (ticket.RpcnSignatureValid(Config.SignatureParameters, input))
+                    {
+                        Log.Info($"User {PlayerName} is coming from an unofficial RPCN network.");
+                        return true;
+                    }
+                }
+
+                if (ticket.RpcnSignatureValid(input))
+                {
+                    Log.Info($"User {PlayerName} is coming from the official RPCN network.");
+                    return true;
+                }
+            }
+            else
+            {
+                if (ticket.HasSigner)
+                {
+                    // TODO Investigate real PSN tickets
+                    Log.Error($"Unknown ticket signer: 0x{ticket.Signer.ToHex()}");
+                }
+            }
+
+            return false;
         }
 
         #endregion

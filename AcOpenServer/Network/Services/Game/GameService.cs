@@ -6,13 +6,13 @@ namespace AcOpenServer.Network.Services.Game
 {
     public class GameService : IService
     {
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly Dictionary<ulong, AuthToken> AuthTokens;
         private bool disposedValue;
 
         public bool IsDisposed => disposedValue;
 
-        public GameService(ScopeLog log)
+        public GameService(Logger log)
         {
             Log = log;
             AuthTokens = [];

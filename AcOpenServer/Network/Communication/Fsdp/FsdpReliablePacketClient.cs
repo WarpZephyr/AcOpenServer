@@ -1,7 +1,7 @@
-﻿using AcOpenServer.Binary;
-using AcOpenServer.Exceptions;
+﻿using AcOpenServer.Exceptions;
 using AcOpenServer.Network.Data.FSDP;
 using AcOpenServer.Utilities;
+using BinaryMemory.IO;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -353,7 +353,7 @@ namespace AcOpenServer.Network.Communication.Fsdp
                 throw new FsdpReliableException($"Buffer is too short for required {nameof(FsdpReliablePacketHeader)} to exist.");
             }
 
-            var header = BinaryBufferReader.Read<FsdpReliablePacketHeader>(buffer);
+            var header = BinaryBufferReader.Peek<FsdpReliablePacketHeader>(buffer);
             return new FsdpReliablePacket(header, buffer[FsdpReliablePacketHeader.Length..]);
         }
 

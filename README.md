@@ -43,6 +43,19 @@ The server makes keys under the "Saved/SERVER_NAME" folder,
 SERVER_NAME being the name of the server instance.  
 Default is a server made by default.  
 
+If you are running on RPCN servers other than the official one and ticket signature verification is on;  
+1. Make sure the RPCN server is configured to sign tickets and the digest type is the same type for RPCN and AcOpenServer's config.  
+   - The digest type string will be different for RPCN and AcOpenServer due to the differences in their codebase.  
+   - If using SHA224 as a digest for example:  
+     - RPCN's config is set to SHA224  
+     - AcOpenServer's config is set to SHA-224withECDSA  
+2. Follow the RPCN readme's steps to generate a ticket signing key if you do not know how.  
+3. Copy the newly generated ticket_public.pem from the RPCN folder into the AcOpenServer server's folder. 
+ 
+The official RPCN server's key is currently built into AcOpenServer but is untested at this time.  
+You may also turn off ticket verification or ticket signature verification only in the config.  
+Turning off ticket verification will also ignore ticket signature verification at this time.  
+
 # Building
 Currently only building on windows is directly supported.  
 However adding other platforms may be doable.  

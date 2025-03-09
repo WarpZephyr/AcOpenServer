@@ -15,7 +15,7 @@ namespace AcOpenServer.Network.Services.Login
     {
         private readonly SVFWMessageClient Client;
         private readonly LoginConfig Config;
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly Queue<Task> SendQueue;
         private bool disposedValue;
 
@@ -23,7 +23,7 @@ namespace AcOpenServer.Network.Services.Login
         public bool IsDisposed => disposedValue;
         public bool Disconnected => disposedValue;
 
-        public LoginClient(SVFWMessageClient client, LoginConfig config, ScopeLog log)
+        public LoginClient(SVFWMessageClient client, LoginConfig config, Logger log)
         {
             Client = client;
             Config = config;

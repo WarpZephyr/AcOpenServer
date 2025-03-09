@@ -11,7 +11,7 @@ namespace AcOpenServer.Network.Communication.Udp
 {
     public class UdpChannelListener : IDisposable
     {
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly UdpClient Listener;
         private readonly Dictionary<IPEndPoint, UdpChannelClient> Clients;
         private readonly CancellationTokenSource CancellationTokenSource;
@@ -21,7 +21,7 @@ namespace AcOpenServer.Network.Communication.Udp
         public bool IsDisposed => disposedValue;
         public event EventHandler<UdpChannelAcceptedEventArgs>? Accepted;
 
-        public UdpChannelListener(int port, ScopeLog log)
+        public UdpChannelListener(int port, Logger log)
         {
             Log = log;
             Listener = new UdpClient(port, AddressFamily.InterNetwork)
@@ -58,7 +58,7 @@ namespace AcOpenServer.Network.Communication.Udp
                     {
                         // If we do not have the client, accept it
                         string name = endPoint.ToString();
-                        var newClient = new UdpChannelClient(this, endPoint, name, Log.Push($"{nameof(UdpChannelClient)}->{name}"));
+                        var newClient = new UdpChannelClient(this, endPoint, name, Log);
                         Clients.Add(endPoint, newClient);
 
                         var eventArgs = new UdpChannelAcceptedEventArgs(newClient, buffer);

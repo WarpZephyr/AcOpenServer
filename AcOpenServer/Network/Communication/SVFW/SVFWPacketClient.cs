@@ -1,7 +1,7 @@
-﻿using AcOpenServer.Binary;
-using AcOpenServer.Exceptions;
+﻿using AcOpenServer.Exceptions;
 using AcOpenServer.Network.Communication.Tcp;
 using AcOpenServer.Network.Data.SVFW;
+using BinaryMemory.IO;
 using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -92,7 +92,7 @@ namespace AcOpenServer.Network.Communication.SVFW
                     throw new SVFWPacketException($"Packet prefix length too small; Received: {received}; Minimum Expected: {ExpectingCount}");
                 }
 
-                ushort packetLength = BinaryBufferReader.ReadUInt16BigEndian(Client.Buffer);
+                ushort packetLength = BinaryBufferReader.PeekUInt16BigEndian(Client.Buffer);
                 if (packetLength < PacketHeaderSize)
                 {
                     throw new SVFWPacketException($"Packet is too small to contain a header; Length: {packetLength}; Minimum Expected: {PacketHeaderSize}");
@@ -123,7 +123,7 @@ namespace AcOpenServer.Network.Communication.SVFW
 
         private static SVFWPacket Read(byte[] buffer)
         {
-            var header = BinaryBufferReader.Read<SVFWPacketHeader>(buffer);
+            var header = BinaryBufferReader.Peek<SVFWPacketHeader>(buffer);
             header.SwapEndian();
 
             var payload = buffer.Length == PacketHeaderSize ? [] : buffer[PacketHeaderSize..];

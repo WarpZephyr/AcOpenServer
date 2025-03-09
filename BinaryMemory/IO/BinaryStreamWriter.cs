@@ -15,6 +15,8 @@ namespace BinaryMemory.IO
     /// </summary>
     public class BinaryStreamWriter : IBinaryWriter, IDisposable
     {
+        #region Members
+
         /// <summary>
         /// The underlying <see cref="BinaryWriter"/>.
         /// </summary>
@@ -69,6 +71,10 @@ namespace BinaryMemory.IO
         /// </summary>
         public int StepInCount => _steps.Count;
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Create a new <see cref="BinaryStreamWriter"/> from a <see cref="Stream"/>.
         /// </summary>
@@ -102,6 +108,8 @@ namespace BinaryMemory.IO
         /// </summary>
         /// <param name="bigEndian">Whether or not to write in big endian byte ordering.</param>
         public BinaryStreamWriter(bool bigEndian = false) : this(new MemoryStream(), bigEndian) { }
+
+        #endregion
 
         #region Array
 

@@ -14,7 +14,6 @@ namespace BinaryMemory.Helpers
             {
                 if (buffer[i] == 0)
                 {
-                    i -= 1; // Ignore terminator in length
                     break;
                 }
             }
@@ -32,7 +31,6 @@ namespace BinaryMemory.Helpers
             {
                 if (buffer[i] == 0 && buffer[i + 1] == 0)
                 {
-                    i = (i + 1) - 2; // Ignore terminator in length
                     break;
                 }
             }
@@ -50,7 +48,6 @@ namespace BinaryMemory.Helpers
             {
                 if (buffer[i] == 0 && buffer[i + 1] == 0 && buffer[i + 2] == 0 && buffer[i + 3] == 0)
                 {
-                    i = (i + 3) - 4; // Ignore terminator in length
                     break;
                 }
             }
@@ -80,7 +77,6 @@ namespace BinaryMemory.Helpers
             {
                 if (buffer[i] == 0)
                 {
-                    i -= 1; // Ignore terminator in length
                     break;
                 }
             }
@@ -109,7 +105,6 @@ namespace BinaryMemory.Helpers
             {
                 if (buffer[i] == 0 && buffer[i + 1] == 0)
                 {
-                    i = (i + 1) - 2; // Ignore terminator in length
                     break;
                 }
             }
@@ -138,7 +133,6 @@ namespace BinaryMemory.Helpers
             {
                 if (buffer[i] == 0 && buffer[i + 1] == 0 && buffer[i + 2] == 0 && buffer[i + 3] == 0)
                 {
-                    i = (i + 3) - 4; // Ignore terminator in length
                     break;
                 }
             }
@@ -166,11 +160,10 @@ namespace BinaryMemory.Helpers
             // An offset equal to the buffer length should return 0 anyways as we check for less than in the loop
             int i = 0;
             int offsetIndex = offset;
-            for (; offsetIndex < buffer.Length; i++)
+            for (; i < buffer.Length; i++)
             {
                 if (buffer[offsetIndex] == 0)
                 {
-                    i -= 1; // Ignore terminator in length
                     break;
                 }
 
@@ -198,11 +191,10 @@ namespace BinaryMemory.Helpers
             // We already confirm the offset is positive
             int i = 0;
             int offsetIndex = offset;
-            for (; offsetIndex < buffer.Length - 1; i += 2)
+            for (; i < buffer.Length - 1; i += 2)
             {
                 if (buffer[offsetIndex] == 0 && buffer[offsetIndex + 1] == 0)
                 {
-                    i = (i + 1) - 2; // Ignore terminator in length
                     break;
                 }
 
@@ -230,11 +222,10 @@ namespace BinaryMemory.Helpers
             // We already confirm the offset is positive
             int i = 0;
             int offsetIndex = offset;
-            for (; offsetIndex < buffer.Length - 3; i += 4)
+            for (; i < buffer.Length - 3; i += 4)
             {
                 if (buffer[offsetIndex] == 0 && buffer[offsetIndex + 1] == 0 && buffer[offsetIndex + 2] == 0 && buffer[offsetIndex + 3] == 0)
                 {
-                    i = (i + 3) - 4; // Ignore terminator in length
                     break;
                 }
 
@@ -265,20 +256,14 @@ namespace BinaryMemory.Helpers
                 throw new ArgumentOutOfRangeException(nameof(offset), $"Offset must be positive: {offset} < 0");
             }
 
-            if (offset > limit)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), $"Offset must not be greater than length limit: {offset} > {limit}");
-            }
-
             // Zero length buffers should pass as we check for less than in the loop
             // An offset equal to the buffer length should return 0 anyways as we check for less than in the loop
             int i = 0;
             int offsetIndex = offset;
-            for (; offsetIndex < limit; i++)
+            for (; i < limit; i++)
             {
                 if (buffer[offsetIndex] == 0)
                 {
-                    i -= 1; // Ignore terminator in length
                     break;
                 }
 
@@ -306,11 +291,6 @@ namespace BinaryMemory.Helpers
                 throw new ArgumentOutOfRangeException(nameof(offset), $"Offset must be positive: {offset} < 0");
             }
 
-            if (offset > trueLimit)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), $"Offset must not be greater than length limit: {offset} > {trueLimit}");
-            }
-
             // Zero length buffers should pass as we check for less than in the loop
             // An offset equal to the buffer length should return 0 anyways as we check for less than in the loop
             // Negative buffer length from the subtraction should pass anyways as it will be less than the offset
@@ -318,11 +298,10 @@ namespace BinaryMemory.Helpers
             int i = 0;
             int offsetIndex = offset;
             int runLength = trueLimit - 1;
-            for (; offsetIndex < runLength; i += 2)
+            for (; i < runLength; i += 2)
             {
                 if (buffer[offsetIndex] == 0 && buffer[offsetIndex + 1] == 0)
                 {
-                    i = (i + 1) - 2; // Ignore terminator in length
                     break;
                 }
 
@@ -350,11 +329,6 @@ namespace BinaryMemory.Helpers
                 throw new ArgumentOutOfRangeException(nameof(offset), $"Offset must be positive: {offset} < 0");
             }
 
-            if (offset > trueLimit)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), $"Offset must not be greater than length limit: {offset} > {trueLimit}");
-            }
-
             // Zero length buffers should pass as we check for less than in the loop
             // An offset equal to the buffer length should return 0 anyways as we check for less than in the loop
             // Negative buffer length from the subtraction should pass anyways as it will be less than the offset
@@ -362,11 +336,10 @@ namespace BinaryMemory.Helpers
             int i = 0;
             int offsetIndex = offset;
             int runLength = trueLimit - 3;
-            for (; offsetIndex < runLength; i += 4)
+            for (; i < runLength; i += 4)
             {
                 if (buffer[offsetIndex] == 0 && buffer[offsetIndex + 1] == 0 && buffer[offsetIndex + 2] == 0 && buffer[offsetIndex + 3] == 0)
                 {
-                    i = (i + 3) - 4; // Ignore terminator in length
                     break;
                 }
 

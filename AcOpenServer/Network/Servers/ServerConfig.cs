@@ -34,6 +34,9 @@ namespace AcOpenServer.Network.Servers
         public bool LogWarnings { get; set; }
         public double LoginClientTimeout { get; set; }
         public double AuthClientTimeout { get; set; }
+        public bool TicketVerification { get; set; }
+        public bool TicketSignatureVerification { get; set; }
+        public string TicketDigest { get; set; }
 
         public ServerConfig()
         {
@@ -50,6 +53,9 @@ namespace AcOpenServer.Network.Servers
             LogWarnings = true;
             LoginClientTimeout = 30d;
             AuthClientTimeout = 30d;
+            TicketVerification = true;
+            TicketSignatureVerification = true;
+            TicketDigest = "SHA-224withECDSA";
         }
 
         public static bool Load(string path, [NotNullWhen(true)] out ServerConfig? config)

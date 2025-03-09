@@ -1,7 +1,7 @@
-﻿using AcOpenServer.Binary;
-using AcOpenServer.Crypto;
+﻿using AcOpenServer.Crypto;
 using AcOpenServer.Exceptions;
 using AcOpenServer.Network.Data.SVFW;
+using BinaryMemory.IO;
 using Google.Protobuf;
 using System;
 using System.Diagnostics;
@@ -145,7 +145,7 @@ namespace AcOpenServer.Network.Communication.SVFW
                 throw new SVFWMessageException($"Message is too small to have a header; Size: {buffer.Length}; Minimum Expected: {MessageHeaderSize}");
             }
 
-            var header = BinaryBufferReader.Read<SVFWMessageHeader>(buffer, 0);
+            var header = BinaryBufferReader.Get<SVFWMessageHeader>(buffer, 0);
             header.SwapEndian();
 
             int payloadOffset = MessageHeaderSize;
@@ -158,7 +158,7 @@ namespace AcOpenServer.Network.Communication.SVFW
                     throw new SVFWMessageException($"Message is a reply, but is too small to have a response header; Size: {buffer.Length}; Minimum Expected: {payloadOffset}");
                 }
 
-                responseHeader = BinaryBufferReader.Read<SVFWMessageResponseHeader>(buffer, MessageHeaderSize);
+                responseHeader = BinaryBufferReader.Get<SVFWMessageResponseHeader>(buffer, MessageHeaderSize);
                 responseHeader.Value.SwapEndian();
             }
             else

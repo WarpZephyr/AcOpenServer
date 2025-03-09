@@ -8,7 +8,7 @@ namespace AcOpenServer.Network.Communication.Udp
     public class UdpChannelClient : IDisposable
     {
         private readonly UdpChannelListener Parent;
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private bool Disconnected;
         private bool disposedValue;
 
@@ -19,7 +19,7 @@ namespace AcOpenServer.Network.Communication.Udp
 
         public event EventHandler<int>? Received;
 
-        public UdpChannelClient(UdpChannelListener parent, IPEndPoint endPoint, string name, ScopeLog log)
+        public UdpChannelClient(UdpChannelListener parent, IPEndPoint endPoint, string name, Logger log)
         {
             Parent = parent;
             EndPoint = endPoint;

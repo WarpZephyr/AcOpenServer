@@ -7,7 +7,7 @@ namespace AcOpenServer.Network.Communication.Tcp
 {
     public class NetTcpListener : IDisposable
     {
-        private readonly ScopeLog Log;
+        private readonly Logger Log;
         private readonly TcpListener Listener;
         private readonly double ClientTimeout;
         private bool disposedValue;
@@ -16,7 +16,7 @@ namespace AcOpenServer.Network.Communication.Tcp
 
         public event EventHandler<NetTcpClient>? Accepted;
 
-        public NetTcpListener(TcpListener listener, double clientTimeout, ScopeLog log)
+        public NetTcpListener(TcpListener listener, double clientTimeout, Logger log)
         {
             Log = log;
             Listener = listener;
@@ -31,7 +31,7 @@ namespace AcOpenServer.Network.Communication.Tcp
             while (true)
             {
                 var client = await Listener.AcceptTcpClientAsync();
-                Accepted?.Invoke(this, new NetTcpClient(client, ClientTimeout, Log.Pop().Push(nameof(NetTcpClient))));
+                Accepted?.Invoke(this, new NetTcpClient(client, ClientTimeout, Log));
             }
         }
 

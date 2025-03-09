@@ -9,11 +9,10 @@ namespace AcOpenServer.Logging
 {
     public class Logger : IDisposable
     {
-        public delegate void WriteDelegete(string value);
-        private const string InfoHeader = "Info->";
-        private const string WarnHeader = "Warn->";
-        private const string ErrorHeader = "Error->";
-        private const string DebugHeader = "Debug->";
+        private const string InfoHeader  = "Info:  ";
+        private const string WarnHeader  = "Warn:  ";
+        private const string ErrorHeader = "Error: ";
+        private const string DebugHeader = "Debug: ";
 
         private readonly Timer Timer;
         private readonly StringBuilder Buffer;
@@ -23,7 +22,7 @@ namespace AcOpenServer.Logging
         private bool DoTimerInternal;
         private bool disposedValue;
 
-        public WriteDelegete WriteCallback { get; set; }
+        public Action<string> WriteCallback { get; set; }
 
         #region Timer
 
@@ -139,11 +138,11 @@ namespace AcOpenServer.Logging
 
         #region Constructors
 
-        public Logger(WriteDelegete writeCallback) : this(TimeSpan.Zero, writeCallback)
+        public Logger(Action<string> writeCallback) : this(TimeSpan.Zero, writeCallback)
         {
         }
 
-        public Logger(TimeSpan period, WriteDelegete writeCallback)
+        public Logger(TimeSpan period, Action<string> writeCallback)
         {
             DoTimerInternal = period != TimeSpan.Zero;
             PeriodInternal = period;
@@ -169,6 +168,24 @@ namespace AcOpenServer.Logging
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Logger FromConsoleSeconds(int seconds)
             => new(TimeSpan.FromSeconds(seconds), Console.Write);
+
+#if DEBUG
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Action<string> GetDebugWriteLambda()
+            => (string value) => System.Diagnostics.Debug.Write(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Logger FromDebug()
+            => new(GetDebugWriteLambda());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Logger FromDebug(TimeSpan period)
+            => new(period, GetDebugWriteLambda());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Logger FromDebug(int seconds)
+            => new(TimeSpan.FromSeconds(seconds), GetDebugWriteLambda());
+#endif
 
         #endregion
 
@@ -204,11 +221,12 @@ namespace AcOpenServer.Logging
             WriteCallback(Buffer.ToString());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckFlushState()
         {
-            // Flush immediately
             if (!DoTimer)
             {
+                // Flush immediately
                 Flush();
             }
         }
@@ -219,7 +237,6 @@ namespace AcOpenServer.Logging
 
         private void Enqueue(string value)
         {
-            // Avoid allocating new string to combine them
             Queue.Enqueue(value);
             CurrentQueueLength += value.Length;
             CheckFlushState();
@@ -244,45 +261,17 @@ namespace AcOpenServer.Logging
             CheckFlushState();
         }
 
-        private void EnqueueScoped(string scope, string value)
-        {
-            // Avoid allocating new string to combine them
-            Queue.Enqueue(scope);
-            Queue.Enqueue(value);
-            CurrentQueueLength += value.Length + scope.Length;
-            CheckFlushState();
-        }
-
-        private void EnqueueLineScoped(string scope, string value)
-        {
-            // Avoid allocating new string to combine them
-            Queue.Enqueue(scope);
-            Queue.Enqueue(value);
-            Queue.Enqueue(Environment.NewLine);
-            CurrentQueueLength += value.Length + scope.Length + Environment.NewLine.Length;
-            CheckFlushState();
-        }
-
-        private void EnqueueWrapLineScoped(string start, string scope, string value)
-        {
-            // Avoid allocating new string to combine them
-            Queue.Enqueue(start);
-            Queue.Enqueue(scope);
-            Queue.Enqueue(value);
-            Queue.Enqueue(Environment.NewLine);
-            CurrentQueueLength += value.Length + start.Length + scope.Length + Environment.NewLine.Length;
-            CheckFlushState();
-        }
-
         #endregion
 
         #region Generic
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(string value)
         {
             Enqueue(value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLine(string value)
         {
             EnqueueLine(value);
@@ -322,57 +311,6 @@ namespace AcOpenServer.Logging
             if (DoLogDebug)
             {
                 EnqueueWrapLine(DebugHeader, value);
-            }
-        }
-
-        #endregion
-
-        #region Scoped Generic
-
-        public void ScopedWrite(string scope, string value)
-        {
-            EnqueueScoped(scope, value);
-        }
-
-        public void ScopedWriteLine(string scope, string value)
-        {
-            EnqueueLineScoped(scope, value);
-        }
-
-        #endregion
-
-        #region Scoped Levels
-
-        public void ScopedInfo(string scope, string value)
-        {
-            if (DoLogInfo)
-            {
-                EnqueueWrapLineScoped(InfoHeader, scope, value);
-            }
-        }
-
-        public void ScopedWarn(string scope, string value)
-        {
-            if (DoLogWarn)
-            {
-                EnqueueWrapLineScoped(WarnHeader, scope, value);
-            }
-        }
-
-        public void ScopedError(string scope, string value)
-        {
-            if (DoLogError)
-            {
-                EnqueueWrapLineScoped(ErrorHeader, scope, value);
-            }
-        }
-
-        [Conditional("DEBUG")]
-        public void ScopedDebug(string scope, string value)
-        {
-            if (DoLogDebug)
-            {
-                EnqueueWrapLineScoped(DebugHeader, scope, value);
             }
         }
 

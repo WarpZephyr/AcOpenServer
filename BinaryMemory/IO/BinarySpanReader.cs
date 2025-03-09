@@ -106,6 +106,42 @@ namespace BinaryMemory.IO
             BigEndian = !BitConverter.IsLittleEndian;
         }
 
+        /// <summary>
+        /// Create a new <see cref="BinarySpanReader"/> from an <see cref="Array"/> of <see cref="byte"/>.
+        /// </summary>
+        /// <param name="buffer">The <see cref="Array"/> to read.</param>
+        /// <param name="bigEndian">Whether or not to read in big endian.</param>
+        public BinarySpanReader(byte[] buffer, bool bigEndian)
+        {
+            Buffer = buffer;
+            BufferOffset = 0;
+            BigEndian = bigEndian;
+        }
+
+        /// <summary>
+        /// Create a new <see cref="BinarySpanReader"/> from a <see cref="Span{T}"/> of <see cref="byte"/>.
+        /// </summary>
+        /// <param name="buffer">The <see cref="Span{T}"/> to read.</param>
+        /// <param name="bigEndian">Whether or not to read in big endian.</param>
+        public BinarySpanReader(Span<byte> buffer, bool bigEndian)
+        {
+            Buffer = buffer;
+            BufferOffset = 0;
+            BigEndian = bigEndian;
+        }
+
+        /// <summary>
+        /// Create a new <see cref="BinarySpanReader"/> from a <see cref="ReadOnlySpan{T}"/> of <see cref="byte"/>.
+        /// </summary>
+        /// <param name="buffer">The <see cref="ReadOnlySpan{T}"/> to read.</param>
+        /// <param name="bigEndian">Whether or not to read in big endian.</param>
+        public BinarySpanReader(ReadOnlySpan<byte> buffer, bool bigEndian)
+        {
+            Buffer = buffer;
+            BufferOffset = 0;
+            BigEndian = bigEndian;
+        }
+
         #endregion
 
         #region Seek
@@ -3317,6 +3353,5 @@ namespace BinaryMemory.IO
             => Assert(ReadUTF32LittleEndian(length), "UTF32LE", options);
 
         #endregion
-
     }
 }
