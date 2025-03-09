@@ -2,7 +2,15 @@
 A project aimed at recreating the 5th generation Armored Core servers.  
 
 # Progress
-Currently still working on the base server code and getting past the authentication step.
+- SVFWRequestMessage: Working  
+- Login Server: Working  
+- Auth Server: Working  
+- FSDP Protocol: In Progress  
+- Game Server: Dependent on FSDP  
+
+The server code can probably use some work.  
+This is my first time writing a server application.  
+This is one of the few times I've written async code so far as well.
 
 # Getting Started
 To start testing the server:  
