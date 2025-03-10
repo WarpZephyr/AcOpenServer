@@ -3,7 +3,6 @@ using AcOpenServer.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace AcOpenServer.Network.Servers
