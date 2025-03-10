@@ -76,7 +76,7 @@ namespace AcOpenServer.Network.Servers
         {
             if (task.Exception != null)
             {
-                Log.Error($"Client disconnected due to an error: {task.Exception}");
+                Log.Error($"Server stopped due to an error: {task.Exception}");
             }
 
             ServerTasks.Remove(task);
