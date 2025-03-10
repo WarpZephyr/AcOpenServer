@@ -1302,11 +1302,14 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr PEM_read_bio_DSAparams(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 
-		#endregion
+        #endregion
 
-		#region RSA
+        #region RSA
 
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public extern static int PEM_write_bio_RSAPublicKey(IntPtr bp, IntPtr x);
+
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int PEM_write_bio_RSA_PUBKEY(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]

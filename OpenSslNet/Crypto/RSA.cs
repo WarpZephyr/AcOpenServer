@@ -336,7 +336,7 @@ namespace OpenSSL.Crypto
 			{
 				using (var bio = BIO.MemoryBuffer())
 				{
-					WritePublicKey(bio);
+					WritePublicKeyPkcs1(bio);
 					return bio.ReadString();
 				}
 			}
@@ -454,23 +454,32 @@ namespace OpenSSL.Crypto
 			return ret;
 		}
 
-		/// <summary>
-		/// Calls PEM_write_bio_RSA_PUBKEY()
-		/// </summary>
-		/// <param name="bio"></param>
-		public void WritePublicKey(BIO bio)
+        /// <summary>
+        /// Calls PEM_write_bio_RSAPublicKey()
+        /// </summary>
+        /// <param name="bio"></param>
+        public void WritePublicKeyPkcs1(BIO bio)
 		{
-			Native.ExpectSuccess(Native.PEM_write_bio_RSA_PUBKEY(bio.Handle, ptr));
+			Native.ExpectSuccess(Native.PEM_write_bio_RSAPublicKey(bio.Handle, ptr));
 		}
 
-		/// <summary>
-		/// Calls PEM_write_bio_RSAPrivateKey()
-		/// </summary>
-		/// <param name="bio"></param>
-		/// <param name="enc"></param>
-		/// <param name="passwd"></param>
-		/// <param name="arg"></param>
-		public void WritePrivateKey(BIO bio, Cipher enc, PasswordHandler passwd, object arg)
+        /// <summary>
+        /// Calls PEM_write_bio_RSA_PUBKEY()
+        /// </summary>
+        /// <param name="bio"></param>
+        public void WritePublicKey(BIO bio)
+        {
+            Native.ExpectSuccess(Native.PEM_write_bio_RSA_PUBKEY(bio.Handle, ptr));
+        }
+
+        /// <summary>
+        /// Calls PEM_write_bio_RSAPrivateKey()
+        /// </summary>
+        /// <param name="bio"></param>
+        /// <param name="enc"></param>
+        /// <param name="passwd"></param>
+        /// <param name="arg"></param>
+        public void WritePrivateKey(BIO bio, Cipher enc, PasswordHandler passwd, object arg)
 		{
 			PasswordThunk thunk = new PasswordThunk(passwd, arg);
 			Native.ExpectSuccess(Native.PEM_write_bio_RSAPrivateKey(

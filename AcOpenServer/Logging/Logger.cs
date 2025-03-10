@@ -151,6 +151,10 @@ namespace AcOpenServer.Logging
             Queue = new Queue<string>();
             CurrentQueueLength = 0;
             WriteCallback = writeCallback;
+            ChannelFlags = LogChannelFlags.Info | LogChannelFlags.Warn | LogChannelFlags.Error;
+#if DEBUG
+            ChannelFlags |= LogChannelFlags.Debug;
+#endif
         }
 
         #endregion

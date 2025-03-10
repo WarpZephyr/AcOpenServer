@@ -56,13 +56,13 @@ namespace AcOpenServer.Crypto
 
         public void Save(string privatePath, string publicPath)
         {
-            BIO bioPublic = BIO.File(publicPath, "w+");
-            RsaInstance.WritePublicKey(bioPublic);
+            BIO bioPublic = BIO.File(publicPath, "wb+");
+            RsaInstance.WritePublicKeyPkcs1(bioPublic);
             bioPublic.Dispose();
 
             if (!IsPublicKey)
             {
-                BIO bioPrivate = BIO.File(privatePath, "w+");
+                BIO bioPrivate = BIO.File(privatePath, "wb+");
                 RsaInstance.WritePrivateKey(bioPrivate, null, null, null);
                 bioPrivate.Dispose();
             }
@@ -86,7 +86,7 @@ namespace AcOpenServer.Crypto
         public string GetPublicString()
         {
             BIO bio = BIO.MemoryBuffer();
-            RsaInstance.WritePublicKey(bio);
+            RsaInstance.WritePublicKeyPkcs1(bio);
             var str = bio.ReadString();
             bio.Dispose();
 
